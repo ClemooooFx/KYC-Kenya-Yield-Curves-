@@ -39,14 +39,17 @@ function loadAndDisplay(filePath, chartId, tableId) {
 }
 
 function loadYieldCurve(chartId) {
+    // Use Promise.all to load both files simultaneously
     Promise.all([
         fetch('data/Treasury Bills Average Rates.xlsx').then(res => res.arrayBuffer()),
         fetch('data/Issues of Treasury Bonds.xlsx').then(res => res.arrayBuffer())
     ])
     .then(([tBillsAb, tBondsAb]) => {
+        // Parse both workbooks
         tBillsData = XLSX.utils.sheet_to_json(XLSX.read(tBillsAb, { type: "array" }).Sheets["Sheet1"]);
         tBondsData = XLSX.utils.sheet_to_json(XLSX.read(tBondsAb, { type: "array" }).Sheets["Sheet1"]);
 
+        // --- NEW: Sort both datasets by date chronologically ---
         const sortByDate = (a, b) => {
             const dateA = new Date(a['Issue Date'].split('/').reverse().join('-'));
             const dateB = new Date(b['Issue Date'].split('/').reverse().join('-'));
@@ -54,14 +57,24 @@ function loadYieldCurve(chartId) {
         };
         tBillsData.sort(sortByDate);
         tBondsData.sort(sortByDate);
+        // -------------------------------------------------------
+
+        // Combine data and find all unique dates
+        const allDates = [...new Set([
+            ...tBillsData.map(row => row['Issue Date']),
+            ...tBondsData.map(row => row['Issue Date'])
+        ])].map(d => {
+            const parts = d.split('/');
+            return new Date(parts[2], parts[1] - 1, parts[0]);
+        }).sort((a, b) => a - b);
         
-        // --- NEW: Set the date picker to the current date ---
-        const today = new Date();
+        // Find the latest date
+        const latestDate = allDates[allDates.length - 1];
         const datePicker = document.getElementById('date-picker');
-        datePicker.valueAsDate = today;
-        
-        // Render the initial chart for today's date
-        updateYieldCurveChart(chartId, today);
+        datePicker.valueAsDate = latestDate;
+
+        // Render the chart for the latest date
+        updateYieldCurveChart(chartId, latestDate);
 
         // Add event listener to the date picker
         datePicker.addEventListener('change', (event) => {
@@ -71,12 +84,11 @@ function loadYieldCurve(chartId) {
     })
     .catch(error => console.error("Failed to load yield curve data:", error));
 }
-
 function updateYieldCurveChart(chartId, targetDate) {
     const tenors = [
         { label: '3 Month', value: 91, type: 'bills' },
         { label: '6 Month', value: 182, type: 'bills' },
-        { label: '1Y', value: 1, type: 'bonds' },
+        { label: '1Y', value: 364, type: 'bills' },
         { label: '2Y', value: 2, type: 'bonds' },
         { label: '3Y', value: 3, type: 'bonds' },
         { label: '5Y', value: 5, type: 'bonds' },
