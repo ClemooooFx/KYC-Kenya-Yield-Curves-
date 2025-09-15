@@ -18,13 +18,13 @@ button {
 
 .chart-container {
     position: relative;
-    width: 70%; /* Makes the container take up the full width of its parent */
+    width: 70%;
     height: 60vh;
     margin-bottom: 90px;
 }
 
 .main-container {
     display: flex;
-    flex-direction: column; /* Stacks the charts vertically */
-    align-items: center; /* Centers the content horizontally */
+    flex-direction: column; 
+    align-items: center; 
 }
