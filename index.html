@@ -1,1 +1,30 @@
-doc
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Kenya Treasury Yield Curves</title>
+  <link rel="stylesheet" href="style.css">
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- SheetJS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+  <h1>Kenya Treasury Yield Curves</h1>
+
+  <button onclick="loadExcel('data/Treasury Bills Average Rates.xlsx')">Load T-Bills</button>
+  <button onclick="loadExcel('data/Issues of Treasury Bonds.xlsx')">Load T-Bonds</button>
+
+  <canvas id="yieldChart"></canvas>
+
+  <h2>Raw Data</h2>
+  <table id="dataTable" border="1">
+    <thead></thead>
+    <tbody></tbody>
+  </table>
+
+  <script src="script.js"></script>
+</body>
+</html>
+
