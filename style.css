@@ -19,6 +19,7 @@ button {
 .chart-container {
     position: relative;
     width: 100%; /* Makes the container take up the full width of its parent */
-    height: 60vh; /* Optional: Sets a height relative to the viewport. Adjust as needed. */
+    height: 60vh;
+    margin-bottom: 50px;
 }
 
