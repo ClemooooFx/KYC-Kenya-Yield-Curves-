@@ -35,7 +35,6 @@ function processTBondData(jsonData, chartId, tableId) {
 
     // 2. Extract unique, sorted dates for the x-axis
     const dates = [...new Set(filteredData.map(row => {
-        // Manually parse the dd/mm/yyyy date string to avoid "NaN/NaN"
         const dateParts = row['Issue Date'].split('/');
         const day = parseInt(dateParts[0], 10);
         const month = parseInt(dateParts[1], 10) - 1;
@@ -49,14 +48,14 @@ function processTBondData(jsonData, chartId, tableId) {
         return aMonth - bMonth;
     });
 
-    // 3. Get unique "Tenor" values for each line
     const tenors = [...new Set(filteredData.map(row => row['Tenor']))].sort((a, b) => a - b);
     const colors = ['#4e79a7', '#f28e2b', '#e15759', '#76b7b2', '#59a14f', '#edc948', '#af7aa1', '#ff9da7'];
     
-    // 4. Create datasets for each tenor
+    // 3. Create datasets and apply the fill-forward logic
     const datasets = tenors.map((tenor, index) => {
         const tenorData = filteredData.filter(row => row['Tenor'] === tenor);
-        const avgRatesByDate = dates.map(date => {
+        
+        let avgRatesByDate = dates.map(date => {
             const matchingEntries = tenorData.filter(row => {
                 const rowDateParts = row['Issue Date'].split('/');
                 const rowDay = parseInt(rowDateParts[0], 10);
@@ -68,21 +67,27 @@ function processTBondData(jsonData, chartId, tableId) {
             const sum = matchingEntries.reduce((acc, row) => acc + (parseFloat(row['Coupon Rate']) || 0), 0);
             return sum / (matchingEntries.length || 1);
         });
+        
+        // Fill forward logic
+        for (let i = 1; i < avgRatesByDate.length; i++) {
+            if (avgRatesByDate[i] === 0 && avgRatesByDate[i-1] !== 0) {
+                avgRatesByDate[i] = avgRatesByDate[i-1];
+            }
+        }
 
         return {
             label: `${tenor} Year Bond`,
             data: avgRatesByDate,
-            borderColor: colors[index % colors.length], // Assign a color from an array
+            borderColor: colors[index % colors.length],
             fill: false,
         };
     });
 
-    // 5. Render the chart and table
+    // 4. Render the chart and table
     renderMultiLineChart(chartId, dates, datasets);
     const headers = ['Issue No', 'Issue Date', 'Tenor', 'Coupon Rate', 'Issue Amount'];
-    renderTable(tableId, headers, jsonData); // Note: render the full table data
+    renderTable(tableId, headers, jsonData);
 }
-
 function processTBillData(jsonData, chartId, tableId) {
     const dates = [...new Set(jsonData.map(row => {
         // Manually parse the dd/mm/yyyy date string
