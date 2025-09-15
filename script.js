@@ -1,12 +1,9 @@
-// A new object to store chart instances so we can manage them easily.
+
 let charts = {};
-// Global variables to store parsed data to avoid re-fetching
 let tBillsData = null;
 let tBondsData = null;
 
-// The main function to handle all chart and table loading
 document.addEventListener('DOMContentLoaded', () => {
-    // Load and display all three charts and tables automatically
     loadAndDisplay('data/Treasury Bills Average Rates.xlsx', 't-bills-chart', 't-bills-table');
     loadAndDisplay('data/Issues of Treasury Bonds.xlsx', 't-bonds-chart', 't-bonds-table');
     loadYieldCurve('yield-curve-chart');
@@ -39,17 +36,14 @@ function loadAndDisplay(filePath, chartId, tableId) {
 }
 
 function loadYieldCurve(chartId) {
-    // Use Promise.all to load both files simultaneously
     Promise.all([
         fetch('data/Treasury Bills Average Rates.xlsx').then(res => res.arrayBuffer()),
         fetch('data/Issues of Treasury Bonds.xlsx').then(res => res.arrayBuffer())
     ])
     .then(([tBillsAb, tBondsAb]) => {
-        // Parse both workbooks
         tBillsData = XLSX.utils.sheet_to_json(XLSX.read(tBillsAb, { type: "array" }).Sheets["Sheet1"]);
         tBondsData = XLSX.utils.sheet_to_json(XLSX.read(tBondsAb, { type: "array" }).Sheets["Sheet1"]);
 
-        // --- NEW: Sort both datasets by date chronologically ---
         const sortByDate = (a, b) => {
             const dateA = new Date(a['Issue Date'].split('/').reverse().join('-'));
             const dateB = new Date(b['Issue Date'].split('/').reverse().join('-'));
@@ -58,15 +52,12 @@ function loadYieldCurve(chartId) {
         tBillsData.sort(sortByDate);
         tBondsData.sort(sortByDate);
 
-        // --- Change the logic here to use the current date ---
         const today = new Date();
         const datePicker = document.getElementById('date-picker');
         datePicker.valueAsDate = today;
 
-        // Render the chart for today's date
         updateYieldCurveChart(chartId, today);
 
-        // Add event listener to the date picker
         datePicker.addEventListener('change', (event) => {
             const selectedDate = event.target.valueAsDate;
             updateYieldCurveChart(chartId, selectedDate);
@@ -96,7 +87,6 @@ function updateYieldCurveChart(chartId, targetDate) {
         for (let i = dataSet.length - 1; i >= 0; i--) {
             const row = dataSet[i];
             
-            // For bonds, filter out non-FXD issues
             if (t.type === 'bonds' && row['Issue No'] && !row['Issue No'].startsWith('FXD')) {
                 continue;
             }
