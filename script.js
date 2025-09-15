@@ -29,7 +29,14 @@ function loadAndDisplay(filePath, chartId, tableId) {
 
 function processTBillData(jsonData, chartId, tableId) {
     const dates = [...new Set(jsonData.map(row => {
-        const date = new Date(row['Issue Date']);
+        // Manually parse the dd/mm/yyyy date string
+        const dateParts = row['Issue Date'].split('/');
+        const day = parseInt(dateParts[0], 10);
+        const month = parseInt(dateParts[1], 10) - 1; // Month is 0-indexed in JS Date
+        const year = parseInt(dateParts[2], 10);
+        
+        const date = new Date(year, month, day);
+
         return `${date.getMonth() + 1}/${date.getFullYear()}`;
     }))];
 
@@ -46,7 +53,12 @@ function processTBillData(jsonData, chartId, tableId) {
         const tenorData = jsonData.filter(row => row['Tenor'] === tenor);
         const avgRatesByDate = dates.map(date => {
             const matchingEntries = tenorData.filter(row => {
-                const rowDate = new Date(row['Issue Date']);
+                const rowDateParts = row['Issue Date'].split('/');
+                const rowDay = parseInt(rowDateParts[0], 10);
+                const rowMonth = parseInt(rowDateParts[1], 10) - 1;
+                const rowYear = parseInt(rowDateParts[2], 10);
+                const rowDate = new Date(rowYear, rowMonth, rowDay);
+
                 return `${rowDate.getMonth() + 1}/${rowDate.getFullYear()}` === date;
             });
             const sum = matchingEntries.reduce((acc, row) => acc + (parseFloat(row['Weighted Average Rate']) || 0), 0);
