@@ -31,7 +31,10 @@ function processTBillData(jsonData, chartId, tableId) {
     const dates = [...new Set(jsonData.map(row => {
         const date = new Date(row['Issue Date']);
         return `${date.getMonth() + 1}/${date.getFullYear()}`;
-    }))].sort((a, b) => {
+    }))];
+
+    // Corrected sorting logic
+    dates.sort((a, b) => {
         const [aMonth, aYear] = a.split('/').map(Number);
         const [bMonth, bYear] = b.split('/').map(Number);
         if (aYear !== bYear) return aYear - bYear;
