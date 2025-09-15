@@ -16,11 +16,6 @@ button {
   cursor: pointer;
 }
 
-canvas {
-  max-width: 800px;
-  margin: 20px auto;
-  display: block;
-}
 .chart-container {
     position: relative;
     width: 100%; /* Makes the container take up the full width of its parent */
