@@ -57,24 +57,14 @@ function loadYieldCurve(chartId) {
         };
         tBillsData.sort(sortByDate);
         tBondsData.sort(sortByDate);
-        // -------------------------------------------------------
 
-        // Combine data and find all unique dates
-        const allDates = [...new Set([
-            ...tBillsData.map(row => row['Issue Date']),
-            ...tBondsData.map(row => row['Issue Date'])
-        ])].map(d => {
-            const parts = d.split('/');
-            return new Date(parts[2], parts[1] - 1, parts[0]);
-        }).sort((a, b) => a - b);
-        
-        // Find the latest date
-        const latestDate = allDates[allDates.length - 1];
+        // --- Change the logic here to use the current date ---
+        const today = new Date();
         const datePicker = document.getElementById('date-picker');
-        datePicker.valueAsDate = latestDate;
+        datePicker.valueAsDate = today;
 
-        // Render the chart for the latest date
-        updateYieldCurveChart(chartId, latestDate);
+        // Render the chart for today's date
+        updateYieldCurveChart(chartId, today);
 
         // Add event listener to the date picker
         datePicker.addEventListener('change', (event) => {
