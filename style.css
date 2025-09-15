@@ -21,4 +21,9 @@ canvas {
   margin: 20px auto;
   display: block;
 }
+.chart-container {
+    position: relative;
+    width: 100%; /* Makes the container take up the full width of its parent */
+    height: 60vh; /* Optional: Sets a height relative to the viewport. Adjust as needed. */
+}
 
