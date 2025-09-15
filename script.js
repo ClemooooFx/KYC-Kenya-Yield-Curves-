@@ -9,9 +9,11 @@ function loadAndDisplay(filePath, chartId, tableId) {
             const sheetName = workbook.SheetNames[0];
             const worksheet = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
 
-            // Handle the specific T-Bills file differently
             if (filePath.includes('Treasury Bills Average Rates.xlsx')) {
                 processTBillData(worksheet, chartId, tableId);
+            } else if (filePath.includes('Issues of Treasury Bonds.xlsx')) {
+                // Call the new function for Treasury Bonds data
+                processTBondData(worksheet, chartId, tableId);
             } else {
                 // Existing logic for other files
                 const headers = Object.keys(worksheet[0]);
@@ -25,6 +27,60 @@ function loadAndDisplay(filePath, chartId, tableId) {
             }
         })
         .catch(error => console.error(`Failed to load or parse the file at ${filePath}:`, error));
+}
+
+function processTBondData(jsonData, chartId, tableId) {
+    // 1. Filter the dataset to include only rows where "Issue No" starts with "FXD"
+    const filteredData = jsonData.filter(row => row['Issue No'].startsWith('FXD'));
+
+    // 2. Extract unique, sorted dates for the x-axis
+    const dates = [...new Set(filteredData.map(row => {
+        // Manually parse the dd/mm/yyyy date string to avoid "NaN/NaN"
+        const dateParts = row['Issue Date'].split('/');
+        const day = parseInt(dateParts[0], 10);
+        const month = parseInt(dateParts[1], 10) - 1;
+        const year = parseInt(dateParts[2], 10);
+        const date = new Date(year, month, day);
+        return `${date.getMonth() + 1}/${date.getFullYear()}`;
+    }))].sort((a, b) => {
+        const [aMonth, aYear] = a.split('/').map(Number);
+        const [bMonth, bYear] = b.split('/').map(Number);
+        if (aYear !== bYear) return aYear - bYear;
+        return aMonth - bMonth;
+    });
+
+    // 3. Get unique "Tenor" values for each line
+    const tenors = [...new Set(filteredData.map(row => row['Tenor']))].sort((a, b) => a - b);
+    const colors = ['#4e79a7', '#f28e2b', '#e15759', '#76b7b2', '#59a14f', '#edc948', '#af7aa1', '#ff9da7'];
+    
+    // 4. Create datasets for each tenor
+    const datasets = tenors.map((tenor, index) => {
+        const tenorData = filteredData.filter(row => row['Tenor'] === tenor);
+        const avgRatesByDate = dates.map(date => {
+            const matchingEntries = tenorData.filter(row => {
+                const rowDateParts = row['Issue Date'].split('/');
+                const rowDay = parseInt(rowDateParts[0], 10);
+                const rowMonth = parseInt(rowDateParts[1], 10) - 1;
+                const rowYear = parseInt(rowDateParts[2], 10);
+                const rowDate = new Date(rowYear, rowMonth, rowDay);
+                return `${rowDate.getMonth() + 1}/${rowDate.getFullYear()}` === date;
+            });
+            const sum = matchingEntries.reduce((acc, row) => acc + (parseFloat(row['Coupon Rate']) || 0), 0);
+            return sum / (matchingEntries.length || 1);
+        });
+
+        return {
+            label: `${tenor} Year Bond`,
+            data: avgRatesByDate,
+            borderColor: colors[index % colors.length], // Assign a color from an array
+            fill: false,
+        };
+    });
+
+    // 5. Render the chart and table
+    renderMultiLineChart(chartId, dates, datasets);
+    const headers = ['Issue No', 'Issue Date', 'Tenor', 'Coupon Rate', 'Issue Amount'];
+    renderTable(tableId, headers, jsonData); // Note: render the full table data
 }
 
 function processTBillData(jsonData, chartId, tableId) {
