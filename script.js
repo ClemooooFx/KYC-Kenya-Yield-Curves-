@@ -93,6 +93,12 @@ function renderMultiLineChart(chartId, labels, datasets) {
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            // --- Add the interaction settings here ---
+            interaction: {
+                mode: 'index',
+                intersect: false
+            },
+            // ----------------------------------------
             scales: {
                 x: {
                     title: {
