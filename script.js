@@ -16,6 +16,16 @@ function loadYieldCurve(chartId) {
         tBillsData = XLSX.utils.sheet_to_json(XLSX.read(tBillsAb, { type: "array" }).Sheets["Sheet1"]);
         tBondsData = XLSX.utils.sheet_to_json(XLSX.read(tBondsAb, { type: "array" }).Sheets["Sheet1"]);
 
+        // --- NEW: Sort both datasets by date chronologically ---
+        const sortByDate = (a, b) => {
+            const dateA = new Date(a['Issue Date'].split('/').reverse().join('-'));
+            const dateB = new Date(b['Issue Date'].split('/').reverse().join('-'));
+            return dateA - dateB;
+        };
+        tBillsData.sort(sortByDate);
+        tBondsData.sort(sortByDate);
+        // -------------------------------------------------------
+
         // Combine data and find all unique dates
         const allDates = [...new Set([
             ...tBillsData.map(row => row['Issue Date']),
