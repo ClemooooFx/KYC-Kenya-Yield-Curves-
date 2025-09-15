@@ -32,22 +32,32 @@ function loadAndDisplay(filePath, chartId, tableId) {
 
 function renderChart(chartId, label, labels, values) {
     const ctx = document.getElementById(chartId).getContext("2d");
-    
-    // Check if a chart with this ID already exists and destroy it to prevent duplicates
     if (charts[chartId]) {
         charts[chartId].destroy();
     }
-
     charts[chartId] = new Chart(ctx, {
         type: "line",
         data: {
             labels: labels,
             datasets: [{
-                label: label.split('/').pop().replace('.xlsx', ''), // Clean up the label
+                label: label.split('/').pop().replace('.xlsx', ''),
                 data: values,
                 borderColor: "blue",
                 fill: false
             }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false, // Prevents the chart from maintaining its aspect ratio
+            plugins: {
+                legend: {
+                    position: 'top',
+                },
+                title: {
+                    display: true,
+                    text: 'Your Chart Title'
+                }
+            }
         }
     });
 }
