@@ -145,21 +145,28 @@ function renderMultiLineChart(chartId, labels, datasets) {
     if (charts[chartId]) {
         charts[chartId].destroy();
     }
+    
+    // Adjust each dataset to include the tension property
+    const smoothDatasets = datasets.map(dataset => {
+        return {
+            ...dataset,
+            tension: 0.4 // Adjust this value between 0 and 1 for desired smoothness
+        };
+    });
+
     charts[chartId] = new Chart(ctx, {
         type: "line",
         data: {
             labels: labels,
-            datasets: datasets,
+            datasets: smoothDatasets,
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            // --- Add the interaction settings here ---
             interaction: {
                 mode: 'index',
                 intersect: false
             },
-            // ----------------------------------------
             scales: {
                 x: {
                     title: {
