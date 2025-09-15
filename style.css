@@ -17,7 +17,7 @@ button {
 }
 
 .chart-container {
-    position: relative;
+    position: center;
     width: 70%; /* Makes the container take up the full width of its parent */
     height: 60vh;
     margin-bottom: 70px;
