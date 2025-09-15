@@ -154,7 +154,7 @@ function updateYieldCurveChart(chartId, targetDate) {
                 x: {
                     title: {
                         display: true,
-                        text: 'Maturity'
+                        text: ''
                     }
                 },
                 y: {
