@@ -23,3 +23,8 @@ button {
     margin-bottom: 70px;
 }
 
+.main-container {
+    display: flex;
+    flex-direction: column; /* Stacks the charts vertically */
+    align-items: center; /* Centers the content horizontally */
+}
