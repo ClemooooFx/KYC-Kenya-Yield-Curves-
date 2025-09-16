@@ -110,7 +110,7 @@ function updateYieldCurveChart(chartId, targetDate) {
         data: rates,
         borderColor: 'purple',
         tension: 0.4,
-        fill: true,
+        fill: false,
     }];
     
     if (charts[chartId]) {
