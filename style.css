@@ -37,3 +37,8 @@ button {
     color: #555;
     font-style: italic;
 }
+
+.date-picker-container {
+    text-align: center;
+    margin-bottom: 20px; /* Adjust this value as needed */
+}
