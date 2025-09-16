@@ -106,11 +106,11 @@ function updateYieldCurveChart(chartId, targetDate) {
     });
 
     const dataset = [{
-        label: 'Yield Curve',
+        label: 'Yield',
         data: rates,
         borderColor: 'purple',
         tension: 0.4,
-        fill: false,
+        fill: true,
     }];
     
     if (charts[chartId]) {
