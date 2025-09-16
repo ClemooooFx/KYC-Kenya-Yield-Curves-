@@ -28,3 +28,12 @@ button {
     flex-direction: column; 
     align-items: center; 
 }
+
+.site-footer {
+    position: fixed;   /* stays visible */
+    bottom: 10px;
+    left: 10px;
+    font-size: 14px;
+    color: #555;
+    font-style: italic;
+}
