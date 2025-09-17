@@ -19,7 +19,7 @@ button {
 .chart-container {
     position: relative;
     width: 70%;
-    height: 60vh;
+    min-height: 60vh;
     margin-bottom: 90px;
 }
 
