@@ -46,7 +46,7 @@ button {
 #pin-curve-button {
     width: 24px;  
     height: 24px;  
-    padding: 1;    
+    padding: 0;    
     border: 1px;
     background-color: purple;
     cursor: pointer;
