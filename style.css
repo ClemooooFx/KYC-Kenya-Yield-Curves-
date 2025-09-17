@@ -50,6 +50,7 @@ button {
     border: 1px;
     background-color: purple;
     cursor: pointer;
+  align-items: center;
 }
 
 #pin-curve-button svg {
