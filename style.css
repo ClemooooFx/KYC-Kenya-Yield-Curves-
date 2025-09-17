@@ -23,6 +23,13 @@ button {
     margin-bottom: 90px;
 }
 
+.chart-container h2 {
+    text-align: left;
+    margin-top: 0; 
+    padding-top: 20px; 
+    margin-left: 20px; 
+}
+
 .main-container {
     display: flex;
     flex-direction: column; 
