@@ -33,7 +33,8 @@ button {
 .main-container {
     display: flex;
     flex-direction: column; 
-    align-items: center; 
+    align-items: center;
+    gap: 50px;
 }
 
 .site-footer {
