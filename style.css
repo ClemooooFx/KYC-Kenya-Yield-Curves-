@@ -54,4 +54,5 @@ button {
 
 #pin-curve-button svg {
     fill: white;
+  transform: rotate(45deg);
 }
