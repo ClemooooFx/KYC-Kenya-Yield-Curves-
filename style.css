@@ -40,5 +40,14 @@ button {
 
 .date-picker-container {
     text-align: center;
-    margin-bottom: 20px; /* Adjust this value as needed */
+    margin-bottom: 20px; 
+}
+
+#pin-curve-button {
+    width: 24px;  
+    height: 24px;  
+    padding: 0;    
+    border: none;
+    background: none;
+    cursor: pointer;
 }
