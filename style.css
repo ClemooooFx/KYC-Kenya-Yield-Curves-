@@ -43,6 +43,13 @@ button {
     margin-bottom: 20px; 
 }
 
+.controls-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+
 #pin-curve-button {
     width: 24px;  
     height: 24px;  
@@ -50,8 +57,6 @@ button {
     border: 1px;
     background-color: green;
     cursor: pointer;
-  display: flex;
-  align-items: center;
 }
 
 #pin-curve-button svg {
