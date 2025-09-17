@@ -2,6 +2,7 @@
 let charts = {};
 let tBillsData = null;
 let tBondsData = null;
+let pinnedCurveData = null;
 
 document.addEventListener('DOMContentLoaded', () => {
     loadAndDisplay('data/Treasury Bills Average Rates.xlsx', 't-bills-chart', 't-bills-table');
@@ -56,15 +57,66 @@ function loadYieldCurve(chartId) {
         const datePicker = document.getElementById('date-picker');
         datePicker.valueAsDate = today;
 
+        // Render the chart for today's date
         updateYieldCurveChart(chartId, today);
 
         datePicker.addEventListener('change', (event) => {
             const selectedDate = event.target.valueAsDate;
             updateYieldCurveChart(chartId, selectedDate);
         });
+
+        // Add event listener for the pin button
+        document.getElementById('pin-curve-button').addEventListener('click', () => {
+            const currentDate = document.getElementById('date-picker').valueAsDate;
+            pinCurve(currentDate);
+        });
     })
     .catch(error => console.error("Failed to load yield curve data:", error));
 }
+
+function pinCurve(date) {
+    const tenors = [
+        { label: '3 Month', value: 91, type: 'bills' },
+        { label: '6 Month', value: 182, type: 'bills' },
+        { label: '1Y', value: 364, type: 'bills' },
+        { label: '2Y', value: 2, type: 'bonds' },
+        { label: '3Y', value: 3, type: 'bonds' },
+        { label: '5Y', value: 5, type: 'bonds' },
+        { label: '10Y', value: 10, type: 'bonds' },
+        { label: '15Y', value: 15, type: 'bonds' },
+        { label: '20Y', value: 20, type: 'bonds' },
+        { label: '25Y', value: 25, type: 'bonds' }
+    ];
+
+    const rates = tenors.map(t => {
+        let dataSet = t.type === 'bills' ? tBillsData : tBondsData;
+        let latestRate = null;
+        for (let i = dataSet.length - 1; i >= 0; i--) {
+            const row = dataSet[i];
+            if (t.type === 'bonds' && row['Issue No'] && !row['Issue No'].startsWith('FXD')) continue;
+            const issueDateParts = row['Issue Date'].split('/');
+            const issueDate = new Date(issueDateParts[2], issueDateParts[1] - 1, issueDateParts[0]);
+            const rowTenor = t.type === 'bills' ? row['Tenor'] : row['Tenor'];
+            const rate = t.type === 'bills' ? parseFloat(row['Weighted Average Rate']) : parseFloat(row['Coupon Rate']);
+            if (issueDate <= date && rowTenor === t.value) {
+                latestRate = rate;
+                break;
+            }
+        }
+        return latestRate;
+    });
+
+    // Store the data and date of the pinned curve
+    pinnedCurveData = {
+        data: rates,
+        date: date.toISOString().split('T')[0] // Store date in YYYY-MM-DD format
+    };
+    
+    // Re-render the chart to include the pinned curve
+    const selectedDate = document.getElementById('date-picker').valueAsDate;
+    updateYieldCurveChart('yield-curve-chart', selectedDate);
+}
+
 function updateYieldCurveChart(chartId, targetDate) {
     const tenors = [
         { label: '3 Month', value: 91, type: 'bills' },
@@ -80,23 +132,16 @@ function updateYieldCurveChart(chartId, targetDate) {
     ];
 
     const labels = tenors.map(t => t.label);
-    const rates = tenors.map(t => {
+    const currentRates = tenors.map(t => {
         let dataSet = t.type === 'bills' ? tBillsData : tBondsData;
-        
         let latestRate = null;
         for (let i = dataSet.length - 1; i >= 0; i--) {
             const row = dataSet[i];
-            
-            if (t.type === 'bonds' && row['Issue No'] && !row['Issue No'].startsWith('FXD')) {
-                continue;
-            }
-
+            if (t.type === 'bonds' && row['Issue No'] && !row['Issue No'].startsWith('FXD')) continue;
             const issueDateParts = row['Issue Date'].split('/');
             const issueDate = new Date(issueDateParts[2], issueDateParts[1] - 1, issueDateParts[0]);
-
             const rowTenor = t.type === 'bills' ? row['Tenor'] : row['Tenor'];
             const rate = t.type === 'bills' ? parseFloat(row['Weighted Average Rate']) : parseFloat(row['Coupon Rate']);
-
             if (issueDate <= targetDate && rowTenor === t.value) {
                 latestRate = rate;
                 break;
@@ -105,14 +150,26 @@ function updateYieldCurveChart(chartId, targetDate) {
         return latestRate;
     });
 
-    const dataset = [{
-        label: 'Yield',
-        data: rates,
+    // Start with the current curve dataset
+    const datasets = [{
+        label: `Yield (${targetDate.toISOString().split('T')[0]})`,
+        data: currentRates,
         borderColor: 'purple',
         tension: 0.4,
         fill: false,
     }];
     
+    // Add the pinned curve dataset if it exists
+    if (pinnedCurveData) {
+        datasets.unshift({ // Add the pinned curve as the first dataset
+            label: `Pinned Yield (${pinnedCurveData.date})`,
+            data: pinnedCurveData.data,
+            borderColor: 'green', // Use a different color
+            tension: 0.4,
+            fill: false,
+        });
+    }
+
     if (charts[chartId]) {
         charts[chartId].destroy();
     }
@@ -121,7 +178,7 @@ function updateYieldCurveChart(chartId, targetDate) {
         type: 'line',
         data: {
             labels: labels,
-            datasets: dataset,
+            datasets: datasets,
         },
         options: {
             responsive: true,
