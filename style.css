@@ -51,3 +51,7 @@ button {
     background-color: purple;
     cursor: pointer;
 }
+
+#pin-curve-button svg {
+    fill: white;
+}
