@@ -54,7 +54,7 @@ button {
     width: 24px;  
     height: 24px;  
     padding: 0;    
-    border: 1px;
+    border: 0px;
     background-color: green;
     cursor: pointer;
     display: flex;
