@@ -50,6 +50,9 @@ button {
     border: 1px;
     background-color: purple;
     cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 #pin-curve-button svg {
