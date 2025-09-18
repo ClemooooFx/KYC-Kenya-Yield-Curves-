@@ -34,6 +34,7 @@ button {
 #t-bonds-navigator {
     width: 100%;
     height: 20px;
+  display: block;
 }
 
 .main-container {
