@@ -264,6 +264,7 @@ function processTBillData(jsonData, chartId, tableId) {
             data: avgRatesByDate,
             borderColor: tenor === 91 ? 'blue' : tenor === 182 ? 'green' : 'red',
             fill: false,
+            pointRadius: 0,
             tension: 0.4
         };
     });
@@ -318,6 +319,7 @@ function processTBondData(jsonData, chartId, tableId) {
             data: avgRatesByDate,
             borderColor: colors[index % colors.length],
             fill: false,
+            pointRadius: 0,
             tension: 0.4
         };
     });
