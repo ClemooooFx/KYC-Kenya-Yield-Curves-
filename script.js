@@ -390,18 +390,65 @@ function renderMultiLineChart(chartId, labels, datasets) {
     });
 }
 
+// Add this entire function to your script
 function createChartWithNavigator(mainChartId, navigatorChartId, labels, datasets) {
     const mainCtx = document.getElementById(mainChartId).getContext("2d");
     const navCtx = document.getElementById(navigatorChartId).getContext("2d");
 
-    // Main Chart setup (remains the same as before)
+    // Main Chart setup
     const mainChart = new Chart(mainCtx, {
-        // ... (your existing main chart configuration) ...
+        type: "line",
+        data: {
+            labels: labels,
+            datasets: datasets,
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            scales: {
+                x: {
+                    type: 'category',
+                    title: { display: true, text: 'Date (Month/Year)' }
+                },
+                y: {
+                    title: { display: true, text: 'Weighted Average Rate (%)' }
+                }
+            },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (label) { label += ': '; }
+                            if (context.parsed.y !== null) { label += `${context.parsed.y.toFixed(2)}%`; }
+                            return label;
+                        }
+                    }
+                }
+            }
+        }
     });
-
-    // Navigator Chart setup (remains the same as before)
+    
+    // Navigator Chart setup
     const navChart = new Chart(navCtx, {
-        // ... (your existing navigator chart configuration) ...
+        type: "line",
+        data: {
+            labels: labels,
+            datasets: datasets.map(ds => ({ ...ds, fill: 'origin', pointRadius: 0 }))
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: { type: 'category', display: false },
+                y: { display: false }
+            },
+            plugins: {
+                legend: { display: false },
+                tooltip: { enabled: false }
+            }
+        }
     });
 
     // Brush Tool Logic
@@ -412,49 +459,32 @@ function createChartWithNavigator(mainChartId, navigatorChartId, labels, dataset
     navCanvas.addEventListener('mousedown', (event) => {
         isDragging = true;
         dragStartX = event.offsetX;
-        const rect = navCanvas.getBoundingClientRect();
-        const start = navChart.scales.x.getValueForPixel(dragStartX);
-        const end = navChart.scales.x.getValueForPixel(dragStartX);
-        updateMainChart(start, end);
+        updateMainChart(dragStartX, dragStartX);
     });
 
     navCanvas.addEventListener('mousemove', (event) => {
         if (!isDragging) return;
-        
         const dragCurrentX = event.offsetX;
         const start = navChart.scales.x.getValueForPixel(Math.min(dragStartX, dragCurrentX));
         const end = navChart.scales.x.getValueForPixel(Math.max(dragStartX, dragCurrentX));
-        
-        // Draw the brush rectangle
-        navChart.update(); // Clear any previous drawing
+        navChart.update();
         const rectStart = navChart.scales.x.getPixelForValue(start);
         const rectEnd = navChart.scales.x.getPixelForValue(end);
-        
-        const brushColor = 'rgba(150, 150, 250, 0.4)'; // Light blue with transparency
-        navCtx.fillStyle = brushColor;
+        navCtx.fillStyle = 'rgba(150, 150, 250, 0.4)';
         navCtx.fillRect(rectStart, 0, rectEnd - rectStart, navCanvas.height);
-        
         updateMainChart(start, end);
     });
 
-    navCanvas.addEventListener('mouseup', () => {
+    navCanvas.addEventListener('mouseup', (event) => {
         isDragging = false;
-        // Finalize the brush selection and draw
-        navChart.update();
         const start = navChart.scales.x.getValueForPixel(Math.min(dragStartX, event.offsetX));
         const end = navChart.scales.x.getValueForPixel(Math.max(dragStartX, event.offsetX));
-        
-        const rectStart = navChart.scales.x.getPixelForValue(start);
-        const rectEnd = navChart.scales.x.getPixelForValue(end);
-        
-        const brushColor = 'rgba(150, 150, 250, 0.4)';
-        navCtx.fillStyle = brushColor;
-        navCtx.fillRect(rectStart, 0, rectEnd - rectStart, navCanvas.height);
+        updateMainChart(start, end);
     });
 
     navCanvas.addEventListener('mouseleave', () => {
         isDragging = false;
-        navChart.update(); // Clear brush on mouse leave
+        navChart.update();
     });
 
     function updateMainChart(start, end) {
