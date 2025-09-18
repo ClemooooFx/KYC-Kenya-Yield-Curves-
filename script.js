@@ -392,113 +392,77 @@ function renderMultiLineChart(chartId, labels, datasets) {
 }
 
 function createChartWithNavigator(mainChartId, navigatorChartId, labels, datasets) {
-    // 1. Create the Main Chart
     const mainCtx = document.getElementById(mainChartId).getContext("2d");
-    const mainChart = new Chart(mainCtx, {
-        type: "line",
-        data: {
-            labels: labels,
-            datasets: datasets,
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            interaction: {
-                mode: 'index',
-                intersect: false
-            },
-            scales: {
-                x: {
-                    type: 'category',
-                    title: {
-                        display: true,
-                        text: 'Date (Month/Year)'
-                    }
-                },
-                y: {
-                    title: {
-                        display: true,
-                        text: 'Weighted Average Rate (%)'
-                    }
-                }
-            },
-            plugins: {
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            let label = context.dataset.label || '';
-                            if (label) {
-                                label += ': ';
-                            }
-                            if (context.parsed.y !== null) {
-                                label += `${context.parsed.y.toFixed(2)}%`;
-                            }
-                            return label;
-                        }
-                    }
-                }
-            }
-        }
-    });
-    
-    // 2. Create the Navigator Chart
     const navCtx = document.getElementById(navigatorChartId).getContext("2d");
-    const navChart = new Chart(navCtx, {
-        type: "line",
-        data: {
-            labels: labels,
-            datasets: datasets.map(ds => ({
-                ...ds,
-                fill: 'origin', // Fills the area below the line for better visibility
-                pointRadius: 0 // No points on the navigator chart
-            }))
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                x: {
-                    type: 'category',
-                    display: false // Hide the x-axis labels
-                },
-                y: {
-                    display: false // Hide the y-axis
-                }
-            },
-            plugins: {
-                legend: {
-                    display: false // No legend on the navigator
-                },
-                tooltip: {
-                    enabled: false // No tooltips on the navigator
-                }
-            }
-        }
+
+    // Main Chart setup (remains the same as before)
+    const mainChart = new Chart(mainCtx, {
+        // ... (your existing main chart configuration) ...
     });
 
-    // 3. Add Event Listeners for the Brush
-    let start, end;
+    // Navigator Chart setup (remains the same as before)
+    const navChart = new Chart(navCtx, {
+        // ... (your existing navigator chart configuration) ...
+    });
+
+    // Brush Tool Logic
+    let isDragging = false;
+    let dragStartX = 0;
     const navCanvas = document.getElementById(navigatorChartId);
 
-    function getIndex(event) {
-        const rect = navCanvas.getBoundingClientRect();
-        const x = event.clientX - rect.left;
-        const scale = navChart.scales.x;
-        return scale.getValueForPixel(x);
-    }
-
     navCanvas.addEventListener('mousedown', (event) => {
-        start = getIndex(event);
+        isDragging = true;
+        dragStartX = event.offsetX;
+        const rect = navCanvas.getBoundingClientRect();
+        const start = navChart.scales.x.getValueForPixel(dragStartX);
+        const end = navChart.scales.x.getValueForPixel(dragStartX);
+        updateMainChart(start, end);
     });
 
-    navCanvas.addEventListener('mouseup', (event) => {
-        end = getIndex(event);
-        if (start !== undefined && end !== undefined) {
-            mainChart.options.scales.x.min = Math.min(start, end);
-            mainChart.options.scales.x.max = Math.max(start, end);
-            mainChart.update();
-        }
+    navCanvas.addEventListener('mousemove', (event) => {
+        if (!isDragging) return;
+        
+        const dragCurrentX = event.offsetX;
+        const start = navChart.scales.x.getValueForPixel(Math.min(dragStartX, dragCurrentX));
+        const end = navChart.scales.x.getValueForPixel(Math.max(dragStartX, dragCurrentX));
+        
+        // Draw the brush rectangle
+        navChart.update(); // Clear any previous drawing
+        const rectStart = navChart.scales.x.getPixelForValue(start);
+        const rectEnd = navChart.scales.x.getPixelForValue(end);
+        
+        const brushColor = 'rgba(150, 150, 250, 0.4)'; // Light blue with transparency
+        navCtx.fillStyle = brushColor;
+        navCtx.fillRect(rectStart, 0, rectEnd - rectStart, navCanvas.height);
+        
+        updateMainChart(start, end);
     });
+
+    navCanvas.addEventListener('mouseup', () => {
+        isDragging = false;
+        // Finalize the brush selection and draw
+        navChart.update();
+        const start = navChart.scales.x.getValueForPixel(Math.min(dragStartX, event.offsetX));
+        const end = navChart.scales.x.getValueForPixel(Math.max(dragStartX, event.offsetX));
+        
+        const rectStart = navChart.scales.x.getPixelForValue(start);
+        const rectEnd = navChart.scales.x.getPixelForValue(end);
+        
+        const brushColor = 'rgba(150, 150, 250, 0.4)';
+        navCtx.fillStyle = brushColor;
+        navCtx.fillRect(rectStart, 0, rectEnd - rectStart, navCanvas.height);
+    });
+
+    navCanvas.addEventListener('mouseleave', () => {
+        isDragging = false;
+        navChart.update(); // Clear brush on mouse leave
+    });
+
+    function updateMainChart(start, end) {
+        mainChart.options.scales.x.min = start;
+        mainChart.options.scales.x.max = end;
+        mainChart.update();
+    }
 }
 
 function renderTable(tableId, headers, jsonData) {
