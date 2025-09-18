@@ -259,6 +259,7 @@ function processTBillData(jsonData, chartId, tableId) {
             }
         }
 
+
         return {
             label: `${tenor} Day Bill`,
             data: avgRatesByDate,
@@ -269,6 +270,7 @@ function processTBillData(jsonData, chartId, tableId) {
         };
     });
 
+    createChartWithNavigator(chartId, 't-bills-navigator', dates, datasets);
     renderMultiLineChart(chartId, dates, datasets);
     const headers = ['Issue Date', 'Tenor', 'Weighted Average Rate'];
     renderTable(tableId, headers, jsonData);
@@ -324,6 +326,7 @@ function processTBondData(jsonData, chartId, tableId) {
         };
     });
 
+    createChartWithNavigator(chartId, 't-bonds-navigator', dates, datasets);
     renderMultiLineChart(chartId, dates, datasets);
     const headers = ['Issue No', 'Issue Date', 'Tenor', 'Coupon Rate', 'Issue Amount'];
     renderTable(tableId, headers, jsonData);
@@ -383,42 +386,122 @@ function renderMultiLineChart(chartId, labels, datasets) {
                             return label;
                         }
                     }
-                },
-                // ADD THIS SECTION TO ENABLE ZOOM AND PAN
-                zoom: {
-                    pan: {
-                        enabled: true, // Enable panning
-                        mode: 'x',    // Pan only on the x-axis
-                        onPanStart: ({ chart }) => {
-                            chart.options.animation = false;
-                        },
-                        onPanComplete: ({ chart }) => {
-                            chart.options.animation = true;
-                        }
-                    },
-                    zoom: {
-                        wheel: {
-                            enabled: true, // Enable zoom with mouse wheel
-                        },
-                        pinch: {
-                            enabled: true // Enable zoom with pinch gestures
-                        },
-                        mode: 'x', // Zoom only on the x-axis
-                        onZoomStart: ({ chart }) => {
-                            chart.options.animation = false;
-                        },
-                        onZoomComplete: ({ chart }) => {
-                            chart.options.animation = true;
-                        }
-                    },
-                    onReset: ({ chart }) => {
-                        chart.options.animation = true;
-                    }
                 }
             }
         }
     });
 }
+
+function createChartWithNavigator(mainChartId, navigatorChartId, labels, datasets) {
+    // 1. Create the Main Chart
+    const mainCtx = document.getElementById(mainChartId).getContext("2d");
+    const mainChart = new Chart(mainCtx, {
+        type: "line",
+        data: {
+            labels: labels,
+            datasets: datasets,
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                mode: 'index',
+                intersect: false
+            },
+            scales: {
+                x: {
+                    type: 'category',
+                    title: {
+                        display: true,
+                        text: 'Date (Month/Year)'
+                    }
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: 'Weighted Average Rate (%)'
+                    }
+                }
+            },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            if (context.parsed.y !== null) {
+                                label += `${context.parsed.y.toFixed(2)}%`;
+                            }
+                            return label;
+                        }
+                    }
+                }
+            }
+        }
+    });
+    
+    // 2. Create the Navigator Chart
+    const navCtx = document.getElementById(navigatorChartId).getContext("2d");
+    const navChart = new Chart(navCtx, {
+        type: "line",
+        data: {
+            labels: labels,
+            datasets: datasets.map(ds => ({
+                ...ds,
+                fill: 'origin', // Fills the area below the line for better visibility
+                pointRadius: 0 // No points on the navigator chart
+            }))
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    type: 'category',
+                    display: false // Hide the x-axis labels
+                },
+                y: {
+                    display: false // Hide the y-axis
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false // No legend on the navigator
+                },
+                tooltip: {
+                    enabled: false // No tooltips on the navigator
+                }
+            }
+        }
+    });
+
+    // 3. Add Event Listeners for the Brush
+    let start, end;
+    const navCanvas = document.getElementById(navigatorChartId);
+
+    function getIndex(event) {
+        const rect = navCanvas.getBoundingClientRect();
+        const x = event.clientX - rect.left;
+        const scale = navChart.scales.x;
+        return scale.getValueForPixel(x);
+    }
+
+    navCanvas.addEventListener('mousedown', (event) => {
+        start = getIndex(event);
+    });
+
+    navCanvas.addEventListener('mouseup', (event) => {
+        end = getIndex(event);
+        if (start !== undefined && end !== undefined) {
+            mainChart.options.scales.x.min = Math.min(start, end);
+            mainChart.options.scales.x.max = Math.max(start, end);
+            mainChart.update();
+        }
+    });
+}
+
 function renderTable(tableId, headers, jsonData) {
     const tableHead = document.querySelector(`#${tableId} thead`);
     const tableBody = document.querySelector(`#${tableId} tbody`);
