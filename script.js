@@ -326,7 +326,6 @@ function processTBondData(jsonData, chartId, tableId) {
     });
 
     createChartWithNavigator(chartId, 't-bonds-navigator', dates, datasets);
-    renderMultiLineChart(chartId, dates, datasets);
     const headers = ['Issue No', 'Issue Date', 'Tenor', 'Coupon Rate', 'Issue Amount'];
     renderTable(tableId, headers, jsonData);
 }
