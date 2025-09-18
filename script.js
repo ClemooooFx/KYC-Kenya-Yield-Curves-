@@ -381,12 +381,42 @@ function renderMultiLineChart(chartId, labels, datasets) {
                             return label;
                         }
                     }
+                },
+                // ADD THIS SECTION TO ENABLE ZOOM AND PAN
+                zoom: {
+                    pan: {
+                        enabled: true, // Enable panning
+                        mode: 'x',    // Pan only on the x-axis
+                        onPanStart: ({ chart }) => {
+                            chart.options.animation = false;
+                        },
+                        onPanComplete: ({ chart }) => {
+                            chart.options.animation = true;
+                        }
+                    },
+                    zoom: {
+                        wheel: {
+                            enabled: true, // Enable zoom with mouse wheel
+                        },
+                        pinch: {
+                            enabled: true // Enable zoom with pinch gestures
+                        },
+                        mode: 'x', // Zoom only on the x-axis
+                        onZoomStart: ({ chart }) => {
+                            chart.options.animation = false;
+                        },
+                        onZoomComplete: ({ chart }) => {
+                            chart.options.animation = true;
+                        }
+                    },
+                    onReset: ({ chart }) => {
+                        chart.options.animation = true;
+                    }
                 }
             }
         }
     });
 }
-
 function renderTable(tableId, headers, jsonData) {
     const tableHead = document.querySelector(`#${tableId} thead`);
     const tableBody = document.querySelector(`#${tableId} tbody`);
