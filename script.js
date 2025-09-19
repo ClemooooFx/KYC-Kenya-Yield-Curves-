@@ -1,4 +1,4 @@
-
+Chart.register(window['chartjs-plugin-zoom']);
 let charts = {};
 let tBillsData = null;
 let tBondsData = null;
