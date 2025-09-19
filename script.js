@@ -270,7 +270,7 @@ function processTBillData(jsonData, chartId, tableId) {
         };
     });
 
-    createChartWithNavigator(chartId, 't-bills-navigator', dates, datasets);
+    renderMultiLineChart(chartId, dates, datasets);
     const headers = ['Issue Date', 'Tenor', 'Weighted Average Rate'];
     renderTable(tableId, headers, jsonData);
 }
