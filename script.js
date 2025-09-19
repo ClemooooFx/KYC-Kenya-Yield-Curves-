@@ -394,6 +394,9 @@ function renderMultiLineChart(chartId, labels, datasets) {
                         wheel: {
                             enabled: true, // Enable zoom via mouse wheel
                         },
+                        drag: { // This is the new part for fixing the drag
+                            enabled: true, // Enable dragging to pan
+                        },
                         pinch: {
                             enabled: true // Enable zoom via pinch gesture
                         },
