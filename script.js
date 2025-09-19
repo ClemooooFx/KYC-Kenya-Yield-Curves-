@@ -335,7 +335,7 @@ function renderMultiLineChart(chartId, labels, datasets) {
     if (charts[chartId]) {
         charts[chartId].destroy();
     }
-    
+
     const smoothDatasets = datasets.map(dataset => {
         return {
             ...dataset,
@@ -383,6 +383,23 @@ function renderMultiLineChart(chartId, labels, datasets) {
                             }
                             return label;
                         }
+                    }
+                },
+                zoom: {
+                    pan: {
+                        enabled: true,
+                        mode: 'x', // Enable panning along the x-axis
+                    },
+                    zoom: {
+                        wheel: {
+                            enabled: true, // Enable zoom via mouse wheel
+                        },
+                        pinch: {
+                            enabled: true // Enable zoom via pinch gesture
+                        },
+                        mode: 'x', // Zoom along the x-axis
+                        // You can adjust the zoom factor here if needed
+                        // speed: 0.1, 
                     }
                 }
             }
