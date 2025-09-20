@@ -116,6 +116,26 @@ function renderCBRChart(chartId, labels, datasets) {
                             return label;
                         }
                     }
+                },
+                zoom: {
+                    pan: {
+                        enabled: true,
+                        mode: 'x', // Enable panning along the x-axis
+                    },
+                    zoom: {
+                        wheel: {
+                            enabled: true, // Enable zoom via mouse wheel
+                        },
+                        drag: { // This is the new part for fixing the drag
+                            enabled: true, // Enable dragging to pan
+                        },
+                        pinch: {
+                            enabled: true // Enable zoom via pinch gesture
+                        },
+                        mode: 'x', // Zoom along the x-axis
+                        // You can adjust the zoom factor here if needed
+                        // speed: 0.1, 
+                    }
                 }
             }
         }
