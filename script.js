@@ -12,7 +12,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function loadAndDisplay(filePath, chartId, tableId) {
     fetch(filePath)
-        .then(res => res.arrayBuffer())
+        .then(res => {
+            if (!res.ok) {
+                throw new Error(`HTTP error! status: ${res.status}`);
+            }
+            return res.arrayBuffer();
+        })
         .then(ab => {
             const workbook = XLSX.read(ab, { type: "array" });
             const sheetName = workbook.SheetNames[0];
