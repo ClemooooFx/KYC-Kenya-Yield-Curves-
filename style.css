@@ -116,18 +116,20 @@ button {
     min-width: 250px; /* Adjust width as needed */
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     z-index: 1000;
-  font-weight: normal;
+    font-weight: normal;
     display: none; /* Hides the dropdown by default */
 }
 
 .dropdown li a {
     padding: 10px 20px;
     display: block; /* Makes the entire area clickable */
-    white-space: nowrap; /* Prevents text from wrapping */
+    white-space: nowrap;
+    font-weight: normal;/* Prevents text from wrapping */
 }
 
 .dropdown li:hover {
-    background-color: #f0f0f0; /* Grey hover for dropdown items */
+    background-color: #f0f0f0;
+    font-weight: normal;
 }
 
 /* Show the dropdown on hover of the parent item */
