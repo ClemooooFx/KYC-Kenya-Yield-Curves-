@@ -3,6 +3,8 @@ let charts = {};
 let tBillsData = null;
 let tBondsData = null;
 let pinnedCurveData = null;
+let cbrData = null;
+let cbrChart = null;
 
 document.addEventListener('DOMContentLoaded', () => {
     loadAndDisplay('data/Treasury Bills Average Rates.xlsx', 't-bills-chart', 't-bills-table');
