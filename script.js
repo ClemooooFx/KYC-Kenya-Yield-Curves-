@@ -32,16 +32,7 @@ function loadAndDisplay(filePath, chartId, tableId) {
                 processTBondData(worksheet, chartId, tableId);
             } else if (filePath.includes('Central Bank Rate (CBR) .xlsx')) {
                 processCBRData(worksheet, chartId, tableId);
-            } else {
-                const headers = Object.keys(worksheet[0]);
-                const xField = headers[0];
-                const yField = headers[1];
-                const labels = worksheet.map(row => row[xField]);
-                const values = worksheet.map(row => parseFloat(row[yField]));
-
-                renderChart(chartId, filePath, labels, values);
-                
-            }
+            } 
         })
         .catch(error => console.error(`Failed to load or parse the file at ${filePath}:`, error));
 }
