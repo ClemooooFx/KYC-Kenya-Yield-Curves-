@@ -332,6 +332,29 @@ function processTBondData(jsonData, chartId, tableId) {
     renderTable(tableId, headers, jsonData);
 }
 
+function processCBRData(jsonData, chartId, tableId) {
+    const dates = jsonData.map(row => {
+        const dateParts = row['Date'].split('/');
+        const date = new Date(dateParts[2], dateParts[1] - 1, dateParts[0]);
+        return `${date.getMonth() + 1}/${date.getFullYear()}`;
+    });
+
+    const rates = jsonData.map(row => parseFloat(row['Rate']));
+
+    const datasets = [{
+        label: 'Central Bank Rate',
+        data: rates,
+        borderColor: '#4e79a7',
+        fill: false,
+        stepped: true, // This creates the step chart
+        pointRadius: 0
+    }];
+
+    renderMultiLineChart(chartId, dates, datasets);
+    const headers = ['Date', 'Rate'];
+    renderTable(tableId, headers, jsonData);
+}
+
 function renderMultiLineChart(chartId, labels, datasets) {
     const ctx = document.getElementById(chartId).getContext("2d");
     if (charts[chartId]) {
