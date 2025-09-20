@@ -354,7 +354,7 @@ function processCBRData(jsonData, chartId, tableId) {
         data: rates,
         borderColor: '#4e79a7',
         fill: false,
-        stepped: true, // This creates the step chart
+        
         pointRadius: 0
     }];
 
