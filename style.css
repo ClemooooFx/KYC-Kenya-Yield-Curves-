@@ -76,6 +76,63 @@ button {
     justify-content: center;
     align-items: center;
 }
+.navbar {
+    background-color: white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* Subtle shadow for depth */
+}
+
+.nav-links {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+}
+
+.nav-item {
+    position: relative; /* Essential for dropdown positioning */
+    padding: 15px 20px;
+}
+
+.nav-item a {
+    text-decoration: none;
+    color: #333;
+    font-weight: bold;
+}
+
+/* Hover effect for the main nav items */
+.nav-item:hover {
+    background-color: #f0f0f0; /* Grey background on hover */
+}
+
+/* Dropdown menu styling */
+.dropdown {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    position: absolute;
+    top: 100%; /* Positions the dropdown right below the nav item */
+    left: 0;
+    background-color: white;
+    min-width: 250px; /* Adjust width as needed */
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    z-index: 1000;
+    display: none; /* Hides the dropdown by default */
+}
+
+.dropdown li a {
+    padding: 10px 20px;
+    display: block; /* Makes the entire area clickable */
+    white-space: nowrap; /* Prevents text from wrapping */
+}
+
+.dropdown li:hover {
+    background-color: #f0f0f0; /* Grey hover for dropdown items */
+}
+
+/* Show the dropdown on hover of the parent item */
+.has-dropdown:hover > .dropdown {
+    display: block;
+}
 
 #pin-curve-button svg {
     fill: white;
