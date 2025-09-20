@@ -358,7 +358,7 @@ function processCBRData(jsonData, chartId, tableId) {
         pointRadius: 0
     }];
 
-    renderCBRChart(chartId, dates, datasets);
+    renderMultiLineChart(chartId, dates, datasets);
     const headers = ['Date', 'Rate'];
     renderTable(tableId, headers, jsonData);
 }
