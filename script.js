@@ -22,6 +22,8 @@ function loadAndDisplay(filePath, chartId, tableId) {
                 processTBillData(worksheet, chartId, tableId);
             } else if (filePath.includes('Issues of Treasury Bonds.xlsx')) {
                 processTBondData(worksheet, chartId, tableId);
+            } else if (filePath.includes('Central Bank Rate (CBR) .xlsx')) {
+                processCBRData(worksheet, chartId, tableId);
             } else {
                 const headers = Object.keys(worksheet[0]);
                 const xField = headers[0];
