@@ -357,7 +357,7 @@ function processCBRData(jsonData, chartId, tableId) {
         pointRadius: 0
     }];
 
-    createChartWithNavigator(chartId, 'cbr-navigator', dates, datasets);
+    renderCBRChart(chartId, labels, datasets);
     const headers = ['Date', 'Rate'];
     renderTable(tableId, headers, jsonData);
 }
