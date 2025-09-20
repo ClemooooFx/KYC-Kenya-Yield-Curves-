@@ -35,7 +35,14 @@
 
     <h1>Central Bank Rate</h1>
     
-    <p>This page will display the data for the Central Bank Rate.</p>
+    <div class="main-container">
+        <div class="chart-container">
+            <h2>Central Bank Rate</h2>
+            <canvas id="cbr-chart"></canvas>
+            <canvas id="cbr-navigator"></canvas>
+        </div>
+        <div id="cbr-table"></div>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.5.1"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
