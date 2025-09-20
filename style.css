@@ -141,3 +141,7 @@ button {
     fill: white;
   transform: rotate(45deg);
 }
+#cbrChart {
+    width: 100%;
+    height: 400px;
+}
