@@ -39,7 +39,7 @@ function loadAndDisplay(filePath, chartId, tableId) {
                 const values = worksheet.map(row => parseFloat(row[yField]));
 
                 renderChart(chartId, filePath, labels, values);
-                renderTable(tableId, headers, worksheet);
+                
             }
         })
         .catch(error => console.error(`Failed to load or parse the file at ${filePath}:`, error));
