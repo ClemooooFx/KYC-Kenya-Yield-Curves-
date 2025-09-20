@@ -435,6 +435,68 @@ function renderMultiLineChart(chartId, labels, datasets) {
     });
 }
 
+function renderCBRChart(chartId, labels, datasets) {
+    const ctx = document.getElementById(chartId).getContext("2d");
+    if (charts[chartId]) {
+        charts[chartId].destroy();
+    }
+
+    const steppedDatasets = datasets.map(dataset => {
+        return {
+            ...dataset,
+            stepped: 'after', // This creates the stepped line
+            tension: 0, // Tension is ignored with 'stepped' but good practice to set it to 0
+        };
+    });
+
+    charts[chartId] = new Chart(ctx, {
+        type: "line",
+        data: {
+            labels: labels,
+            datasets: steppedDatasets,
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                mode: 'index',
+                intersect: false
+            },
+            scales: {
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Date (Month/Year)'
+                    }
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: 'Rate (%)'
+                    }
+                }
+            },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            if (context.parsed.y !== null) {
+                                label += `${context.parsed.y.toFixed(2)}%`;
+                            }
+                            return label;
+                        }
+                    }
+                },
+                // Removed the zoom plugin as you are using a navigator
+            }
+        }
+    });
+}
+
 // Add this entire function to your script
 function createChartWithNavigator(mainChartId, navigatorChartId, labels, datasets) {
     const mainCtx = document.getElementById(mainChartId).getContext("2d");
