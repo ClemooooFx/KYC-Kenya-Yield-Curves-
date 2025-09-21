@@ -323,8 +323,9 @@ function processTBondData(jsonData, chartId, tableId) {
             label: `${tenor} Year Bond`,
             data: avgRatesByDate,
             borderColor: colors[index % colors.length],
-            fill: true,
+            fill: false,
             pointRadius: 0,
+            pointBackgroundColor: colors[index % colors.length],
             tension: 0.4
         };
     });
