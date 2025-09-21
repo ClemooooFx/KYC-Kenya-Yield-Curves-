@@ -115,6 +115,14 @@ function renderCBRChart(chartId, labels, datasets) {
                 }
             },
             plugins: {
+                legend: {
+                    display: true,
+                    backgroundColor: '#4e79a7',
+                    labels: {
+                        boxWidth: 20,
+                        padding: 15
+                    }
+                },
                 tooltip: {
                     callbacks: {
                         label: function(context) {
