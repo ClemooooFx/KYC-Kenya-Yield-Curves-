@@ -117,7 +117,7 @@ function renderCBRChart(chartId, labels, datasets) {
             plugins: {
                 legend: {
                     display: true,
-                    backgroundColor: '#4e79a7',
+                    fill: true,
                     labels: {
                         boxWidth: 20,
                         padding: 15
