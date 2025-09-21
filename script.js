@@ -158,6 +158,7 @@ function updateYieldCurveChart(chartId, targetDate) {
         borderColor: 'purple',
         tension: 0.4,
         fill: false,
+        pointBackgroundColor: 'purple',
     }];
     
     // Add the pinned curve dataset if it exists
@@ -168,6 +169,7 @@ function updateYieldCurveChart(chartId, targetDate) {
             borderColor: 'green', // Use a different color
             tension: 0.4,
             fill: false,
+            pointBackgroundColor: 'green'
         });
     }
 
@@ -267,6 +269,7 @@ function processTBillData(jsonData, chartId, tableId) {
             borderColor: tenor === 91 ? 'blue' : tenor === 182 ? 'green' : 'red',
             fill: false,
             pointRadius: 0,
+            pointBackgroundColor: tenor === 91 ? 'blue' : tenor === 182 ? 'green' : 'red',
             tension: 0.4
         };
     });
@@ -320,7 +323,7 @@ function processTBondData(jsonData, chartId, tableId) {
             label: `${tenor} Year Bond`,
             data: avgRatesByDate,
             borderColor: colors[index % colors.length],
-            fill: false,
+            fill: true,
             pointRadius: 0,
             tension: 0.4
         };
