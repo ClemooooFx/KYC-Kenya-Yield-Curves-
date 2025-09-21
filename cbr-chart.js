@@ -79,6 +79,10 @@ function renderCBRChart(chartId, labels, datasets) {
         tension: 0,
     }));
 
+    // Calculate the maximum index for the x-axis
+    // Add a value to the last index to create space
+    const maxIndex = labels.length - 1 + 1; // You can adjust the '1' to a larger number for more space
+
     charts[chartId] = new Chart(ctx, {
         type: "line",
         data: {
@@ -98,8 +102,9 @@ function renderCBRChart(chartId, labels, datasets) {
                         display: true,
                         text: 'Date (Month/Year)'
                     },
-                    // Add this line to create space at the edges
-                    offset: true,
+                    // Set the maximum value of the scale to create space on the right
+                    max: maxIndex,
+                    // min: 0 // Optional, to ensure it starts from the first point
                 },
                 y: {
                     title: {
