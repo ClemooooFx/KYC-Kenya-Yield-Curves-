@@ -1,4 +1,5 @@
 // cbr-chart.js
+// cbr-chart.js
 
 Chart.register(window.ChartZoom);
 let charts = {};
@@ -9,10 +10,7 @@ let cbrData = null;
 let cbrChart = null;
 
 document.addEventListener('DOMContentLoaded', () => {
-    
-    
     loadAndDisplay('data/Central Bank Rate (CBR).xlsx', 'cbr-chart', 'cbr-table');
-    
 });
 
 function loadAndDisplay(filePath, chartId, tableId) {
@@ -33,8 +31,14 @@ function loadAndDisplay(filePath, chartId, tableId) {
             } else if (filePath.includes('Issues of Treasury Bonds.xlsx')) {
                 processTBondData(worksheet, chartId, tableId);
             } else if (filePath.includes('Central Bank Rate (CBR).xlsx')) {
-                processCBRData(worksheet, chartId, tableId);
-            } 
+                // Sort the data by date before processing
+                const sortedData = worksheet.sort((a, b) => {
+                    const dateA = new Date(a['Date'].split('/').reverse().join('-'));
+                    const dateB = new Date(b['Date'].split('/').reverse().join('-'));
+                    return dateA - dateB;
+                });
+                processCBRData(sortedData, chartId, tableId);
+            }
         })
         .catch(error => console.error(`Failed to load or parse the file at ${filePath}:`, error));
 }
@@ -93,7 +97,9 @@ function renderCBRChart(chartId, labels, datasets) {
                     title: {
                         display: true,
                         text: 'Date (Month/Year)'
-                    }
+                    },
+                    // Add this line to create space at the edges
+                    offset: true,
                 },
                 y: {
                     title: {
@@ -120,21 +126,19 @@ function renderCBRChart(chartId, labels, datasets) {
                 zoom: {
                     pan: {
                         enabled: true,
-                        mode: 'x', // Enable panning along the x-axis
+                        mode: 'x',
                     },
                     zoom: {
                         wheel: {
-                            enabled: true, // Enable zoom via mouse wheel
+                            enabled: true,
                         },
-                        drag: { // This is the new part for fixing the drag
-                            enabled: true, // Enable dragging to pan
+                        drag: {
+                            enabled: true,
                         },
                         pinch: {
-                            enabled: true // Enable zoom via pinch gesture
+                            enabled: true,
                         },
-                        mode: 'x', // Zoom along the x-axis
-                        // You can adjust the zoom factor here if needed
-                        // speed: 0.1, 
+                        mode: 'x',
                     }
                 }
             }
