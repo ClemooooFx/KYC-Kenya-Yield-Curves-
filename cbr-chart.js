@@ -59,7 +59,8 @@ function processCBRData(jsonData, chartId, tableId) {
         fill: false,
         stepped: 'after',
         tension: 0,
-        pointRadius: 0
+        pointRadius: 0,
+        pointBackgroundColor: '#4e79a7'
     }];
 
     renderCBRChart(chartId, dates, datasets);
