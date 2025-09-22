@@ -168,6 +168,7 @@ function updateYieldCurveChart(chartId, targetDate) {
             label: `Pinned Yield (${pinnedCurveData.date})`,
             data: pinnedCurveData.data,
             borderColor: 'green', // Use a different color
+            backgroundColor: 'green',
             tension: 0.4,
             fill: false,
             pointBackgroundColor: 'green'
