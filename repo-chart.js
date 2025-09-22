@@ -41,7 +41,7 @@ function processRepoData(jsonData, chartId, tableId) {
     
 
     // Sort the data by date
-    const sortedData = filteredData.sort((a, b) => {
+    const sortedData = jsonData.sort((a, b) => {
         const dateA = new Date(a['Date'].split('/').reverse().join('-'));
         const dateB = new Date(b['Date'].split('/').reverse().join('-'));
         return dateA - dateB;
