@@ -156,6 +156,7 @@ function updateYieldCurveChart(chartId, targetDate) {
         label: `Yield (${targetDate.toISOString().split('T')[0]})`,
         data: currentRates,
         borderColor: 'purple',
+        backgroundColor: 'purple',
         tension: 0.4,
         fill: false,
         pointBackgroundColor: 'purple',
