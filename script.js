@@ -155,7 +155,7 @@ function updateYieldCurveChart(chartId, targetDate) {
     const datasets = [{
         label: `Yield (${targetDate.toISOString().split('T')[0]})`,
         data: currentRates,
-        borderColor: 'purple',
+        fillColor: 'purple',
         tension: 0.4,
         fill: false,
         pointBackgroundColor: 'purple',
