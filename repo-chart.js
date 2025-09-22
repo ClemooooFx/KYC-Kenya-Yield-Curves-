@@ -66,10 +66,9 @@ function processRepoData(jsonData, chartId, tableId) {
 
     const dates = [];
     const currentDate = new Date(firstDate);
-    while (currentDate <= lastDate) {
-        dates.push(new Date(currentDate));
-        currentDate.setDate(currentDate.getDate() + 1);
-    }
+    const dateLabels = sortedData.map(row => row['Date']);
+const repoData   = sortedData.map(row => cleanAndParse(row['Repo']));
+const reverseRepoData = sortedData.map(row => cleanAndParse(row['Reverse Repo']));
 
     // Format dates as dd/mm/yyyy
     const formatDate = (date) => {
