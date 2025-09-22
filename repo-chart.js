@@ -1,0 +1,89 @@
+Chart.register(window.ChartZoom);
+let repoData = null;
+let repoChart = null;
+
+document.addEventListener('DOMContentLoaded', () => {
+    loadAndDisplay('data/Repo and Reverse Repo.xlsx', 'repo-chart', 'repo-table');
+});
+
+function processRepoData(jsonData, chartId, tableId) {
+    // Filter out rows where the "Date" is blank
+    const filteredData = jsonData.filter(row => row['Date']);
+
+    // Sort the data by date
+    const sortedData = filteredData.sort((a, b) => {
+        const dateA = new Date(a['Date'].split('/').reverse().join('-'));
+        const dateB = new Date(b['Date'].split('/').reverse().join('-'));
+        return dateA - dateB;
+    });
+
+    // Create a continuous sequence of dates from the earliest date to the latest
+    const firstDate = new Date(sortedData[0]['Date'].split('/').reverse().join('-'));
+    const lastDate = new Date(sortedData[sortedData.length - 1]['Date'].split('/').reverse().join('-'));
+    const dates = [];
+    const currentDate = new Date(firstDate);
+    while (currentDate <= lastDate) {
+        dates.push(new Date(currentDate));
+        currentDate.setDate(currentDate.getDate() + 1);
+    }
+    const dateLabels = dates.map(date => {
+        const day = date.getDate().toString().padStart(2, '0');
+        const month = (date.getMonth() + 1).toString().padStart(2, '0');
+        const year = date.getFullYear();
+        return `${day}/${month}/${year}`;
+    });
+
+    const repoData = [];
+    const reverseRepoData = [];
+    let lastRepoValue = 0;
+    let lastReverseRepoValue = 0;
+
+    // Map the continuous dates to the data from the JSON
+    const dataMap = new Map();
+    sortedData.forEach(row => {
+        dataMap.set(row['Date'], {
+            repo: parseFloat(row['Repo']),
+            reverseRepo: parseFloat(row['Reverse Repo'])
+        });
+    });
+
+    // Populate the datasets for the chart, filling in missing values
+    dates.forEach(date => {
+        const dateString = `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`;
+        const values = dataMap.get(dateString);
+
+        if (values && values.repo !== 0) {
+            lastRepoValue = values.repo;
+        }
+        repoData.push(lastRepoValue.toFixed(3));
+
+        if (values && values.reverseRepo !== 0) {
+            lastReverseRepoValue = values.reverseRepo;
+        }
+        reverseRepoData.push(lastReverseRepoValue.toFixed(3));
+    });
+
+    const datasets = [{
+        label: 'Repo Rate',
+        data: repoData,
+        borderColor: '#4e79a7',
+        backgroundColor: '#4e79a7',
+        fill: false,
+        tension: 0.4,
+        pointRadius: 0,
+        pointBackgroundColor: '#4e79a7'
+    }, {
+        label: 'Reverse Repo Rate',
+        data: reverseRepoData,
+        borderColor: '#e15759',
+        backgroundColor: '#e15759',
+        fill: false,
+        tension: 0.4,
+        pointRadius: 0,
+        pointBackgroundColor: '#e15759'
+    }];
+
+    renderMultiLineChart(chartId, dateLabels, datasets);
+    const headers = ['Date', 'Repo', 'Reverse Repo'];
+    renderTable(tableId, headers, sortedData);
+}
