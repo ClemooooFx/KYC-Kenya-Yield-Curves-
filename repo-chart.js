@@ -118,3 +118,83 @@ function processRepoData(jsonData, chartId, tableId) {
     const headers = ['Date', 'Repo', 'Reverse Repo'];
     renderTable(tableId, headers, sortedData);
 }
+
+function renderMultiLineChart(chartId, labels, datasets) {
+    const ctx = document.getElementById(chartId).getContext("2d");
+    if (charts[chartId]) {
+        charts[chartId].destroy();
+    }
+
+    const smoothDatasets = datasets.map(dataset => {
+        return {
+            ...dataset,
+            tension: 0.4
+        };
+    });
+
+    charts[chartId] = new Chart(ctx, {
+        type: "line",
+        data: {
+            labels: labels,
+            datasets: smoothDatasets,
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                mode: 'index',
+                intersect: false
+            },
+            scales: {
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Date (Month/Year)'
+                    }
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: 'Weighted Average Rate (%)'
+                    }
+                }
+            },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            if (context.parsed.y !== null) {
+                                label += `${context.parsed.y.toFixed(2)}%`;
+                            }
+                            return label;
+                        }
+                    }
+                },
+                zoom: {
+                    pan: {
+                        enabled: true,
+                        mode: 'x', // Enable panning along the x-axis
+                    },
+                    zoom: {
+                        wheel: {
+                            enabled: true, // Enable zoom via mouse wheel
+                        },
+                        drag: { // This is the new part for fixing the drag
+                            enabled: true, // Enable dragging to pan
+                        },
+                        pinch: {
+                            enabled: true // Enable zoom via pinch gesture
+                        },
+                        mode: 'x', // Zoom along the x-axis
+                        // You can adjust the zoom factor here if needed
+                        // speed: 0.1, 
+                    }
+                }
+            }
+        }
+    });
+}
