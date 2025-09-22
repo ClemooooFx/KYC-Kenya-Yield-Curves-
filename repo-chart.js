@@ -17,6 +17,9 @@ function loadAndDisplay(filePath, chartId, tableId) {
             const workbook = XLSX.read(ab, { type: "array" });
             const sheetName = workbook.SheetNames[0];
             let worksheet = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
+            console.log("First few rows:", worksheet.slice(0, 5));
+
+
             // 🧹 Clean rows: keep only those with a valid Date
             worksheet = worksheet.filter(row => row && row['Date'] && row['Date'].toString().trim() !== "");
 
