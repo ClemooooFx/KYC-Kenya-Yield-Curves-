@@ -128,6 +128,7 @@ function processRepoData(jsonData, chartId, tableId) {
             backgroundColor: '#4e79a7',
             fill: false,
             tension: 0.4,
+            stepped: false,
             pointRadius: 0,
             pointBackgroundColor: '#4e79a7'
         },
