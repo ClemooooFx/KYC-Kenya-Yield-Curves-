@@ -16,7 +16,7 @@ function loadAndDisplay(filePath, chartId, tableId) {
         .then(ab => {
             const workbook = XLSX.read(ab, { type: "array" });
             const sheetName = workbook.SheetNames[0];
-            const worksheet = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
+            let worksheet = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
             worksheet = worksheet.filter(row => row && row['Date']);
 
             if (filePath.includes('Treasury Bills Average Rates.xlsx')) {
