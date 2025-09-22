@@ -60,12 +60,9 @@ function processRepoData(jsonData, chartId, tableId) {
         return dateA - dateB;
     });
 
-    // Create a continuous sequence of dates
-    const firstDate = new Date(sortedData[0]['Date'].split('/').reverse().join('-'));
-    const lastDate = new Date(sortedData[sortedData.length - 1]['Date'].split('/').reverse().join('-'));
+    
 
-    const dates = [];
-    const currentDate = new Date(firstDate);
+    
     const dateLabels = sortedData.map(row => row['Date']);
 const repoData   = sortedData.map(row => cleanAndParse(row['Repo']));
 const reverseRepoData = sortedData.map(row => cleanAndParse(row['Reverse Repo']));
@@ -78,7 +75,7 @@ const reverseRepoData = sortedData.map(row => cleanAndParse(row['Reverse Repo'])
         return `${day}/${month}/${year}`;
     };
 
-    const dateLabels = dates.map(formatDate);
+    
 
     // Map input data by normalized date
     const dataMap = new Map();
