@@ -1,6 +1,5 @@
 Chart.register(window.ChartZoom);
-let repoData = null;
-let repoChart = null;
+let charts = {};
 
 document.addEventListener('DOMContentLoaded', () => {
     loadAndDisplay('data/Repo and Reverse Repo.xlsx', 'repo-chart', 'repo-table');
