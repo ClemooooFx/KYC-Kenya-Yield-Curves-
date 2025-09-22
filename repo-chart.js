@@ -37,8 +37,8 @@ function loadAndDisplay(filePath, chartId, tableId) {
 }
 
 function processRepoData(jsonData, chartId, tableId) {
-    // Filter out rows where the "Date" is blank
-    const filteredData = jsonData.filter(row => row['Date']);
+    // Filter out rows that are not valid objects, or have a blank "Date"
+    const filteredData = jsonData.filter(row => row && row['Date']);
 
     // Sort the data by date
     const sortedData = filteredData.sort((a, b) => {
