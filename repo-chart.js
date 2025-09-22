@@ -17,16 +17,8 @@ function loadAndDisplay(filePath, chartId, tableId) {
             const workbook = XLSX.read(ab, { type: "array" });
             const sheetName = workbook.SheetNames[0];
             const sheet = workbook.Sheets[sheetName];
-console.log("Cell keys in raw sheet:", Object.keys(sheet));
-            // 🟢 Debug what’s inside
-    console.log("Sheet names in", filePath, ":", workbook.SheetNames);
-    console.log("Raw sheet data:", workbook.Sheets[sheetName]);
 
-            let worksheet = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { defval: "" });
-console.log("First row keys:", worksheet.length > 0 ? Object.keys(worksheet[0]) : "No rows");
-
-            console.log("First few rows:", worksheet.slice(0, 5));
-
+            let worksheet = XLSX.utils.sheet_to_json(sheet, { defval: "" });
 
             // 🧹 Clean rows: keep only those with a valid Date
             worksheet = worksheet.filter(row => row && row['Date'] && row['Date'].toString().trim() !== "");
@@ -60,22 +52,8 @@ function processRepoData(jsonData, chartId, tableId) {
         return dateA - dateB;
     });
 
-    
-
-    
+    // Extract labels
     const dateLabels = sortedData.map(row => row['Date']);
-const repoData   = sortedData.map(row => cleanAndParse(row['Repo']));
-const reverseRepoData = sortedData.map(row => cleanAndParse(row['Reverse Repo']));
-
-    // Format dates as dd/mm/yyyy
-    const formatDate = (date) => {
-        const day = date.getDate().toString().padStart(2, '0');
-        const month = (date.getMonth() + 1).toString().padStart(2, '0');
-        const year = date.getFullYear();
-        return `${day}/${month}/${year}`;
-    };
-
-    
 
     // Map input data by normalized date
     const dataMap = new Map();
@@ -86,12 +64,9 @@ const reverseRepoData = sortedData.map(row => cleanAndParse(row['Reverse Repo'])
         const year = y;
         const normalizedDate = `${day}/${month}/${year}`;
 
-        const repoValue = cleanAndParse(row['Repo']);
-        const reverseRepoValue = cleanAndParse(row['Reverse Repo']);
-
         dataMap.set(normalizedDate, {
-            repo: repoValue,
-            reverseRepo: reverseRepoValue
+            repo: cleanAndParse(row['Repo']),
+            reverseRepo: cleanAndParse(row['Reverse Repo'])
         });
     });
 
@@ -123,10 +98,9 @@ const reverseRepoData = sortedData.map(row => cleanAndParse(row['Reverse Repo'])
             borderColor: '#4e79a7',
             backgroundColor: '#4e79a7',
             fill: false,
-            tension: 0.4,
-            stepped: false,
-            pointRadius: 0,
-            pointBackgroundColor: '#4e79a7'
+            tension: 0.4,       // smooth curve
+            stepped: false,     // smooth
+            pointRadius: 0
         },
         {
             label: 'Reverse Repo Rate',
@@ -134,9 +108,9 @@ const reverseRepoData = sortedData.map(row => cleanAndParse(row['Reverse Repo'])
             borderColor: '#e15759',
             backgroundColor: '#e15759',
             fill: false,
-            tension: 0.4,
-            pointRadius: 0,
-            pointBackgroundColor: '#e15759'
+            tension: 0,         // no curve
+            stepped: true,      // stepped line
+            pointRadius: 0
         }
     ];
 
@@ -148,25 +122,17 @@ const reverseRepoData = sortedData.map(row => cleanAndParse(row['Reverse Repo'])
     renderTable(tableId, headers, sortedData);
 }
 
-
 function renderMultiLineChart(chartId, labels, datasets) {
     const ctx = document.getElementById(chartId).getContext("2d");
     if (charts[chartId]) {
         charts[chartId].destroy();
     }
 
-    const smoothDatasets = datasets.map(dataset => {
-        return {
-            ...dataset,
-            tension: 0.4
-        };
-    });
-
     charts[chartId] = new Chart(ctx, {
         type: "line",
         data: {
             labels: labels,
-            datasets: smoothDatasets,
+            datasets: datasets,
         },
         options: {
             responsive: true,
@@ -179,7 +145,7 @@ function renderMultiLineChart(chartId, labels, datasets) {
                 x: {
                     title: {
                         display: true,
-                        text: 'Date (Month/Year)'
+                        text: 'Date (dd/mm/yyyy)'
                     }
                 },
                 y: {
@@ -205,23 +171,12 @@ function renderMultiLineChart(chartId, labels, datasets) {
                     }
                 },
                 zoom: {
-                    pan: {
-                        enabled: true,
-                        mode: 'x', // Enable panning along the x-axis
-                    },
+                    pan: { enabled: true, mode: 'x' },
                     zoom: {
-                        wheel: {
-                            enabled: true, // Enable zoom via mouse wheel
-                        },
-                        drag: { // This is the new part for fixing the drag
-                            enabled: true, // Enable dragging to pan
-                        },
-                        pinch: {
-                            enabled: true // Enable zoom via pinch gesture
-                        },
-                        mode: 'x', // Zoom along the x-axis
-                        // You can adjust the zoom factor here if needed
-                        // speed: 0.1, 
+                        wheel: { enabled: true },
+                        drag: { enabled: true },
+                        pinch: { enabled: true },
+                        mode: 'x'
                     }
                 }
             }
@@ -231,9 +186,8 @@ function renderMultiLineChart(chartId, labels, datasets) {
 
 function cleanAndParse(value) {
     if (typeof value === 'string') {
-        // Remove all characters except digits and the decimal point
         const cleanedString = value.replace(/[^0-9.]/g, '');
-        return parseFloat(cleanedString) || 0; // Return the number or 0 if it's not a valid number
+        return parseFloat(cleanedString) || 0;
     }
     return parseFloat(value) || 0;
 }
