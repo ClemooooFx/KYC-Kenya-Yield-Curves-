@@ -16,7 +16,7 @@ function loadAndDisplay(filePath, chartId, tableId) {
         .then(ab => {
             const workbook = XLSX.read(ab, { type: "array" });
             const sheetName = workbook.SheetNames[0];
-            let worksheet = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
+            let worksheet = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { range: 1 });
             console.log("First few rows:", worksheet.slice(0, 5));
 
 
