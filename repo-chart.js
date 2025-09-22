@@ -22,8 +22,9 @@ console.log("Cell keys in raw sheet:", Object.keys(sheet));
     console.log("Sheet names in", filePath, ":", workbook.SheetNames);
     console.log("Raw sheet data:", workbook.Sheets[sheetName]);
 
-            let worksheet = XLSX.utils.sheet_to_json(sheet, { header: 1 }); 
-console.log("Raw rows as arrays:", worksheet.slice(0, 5));
+            let worksheet = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { defval: "" });
+console.log("First row keys:", worksheet.length > 0 ? Object.keys(worksheet[0]) : "No rows");
+
             console.log("First few rows:", worksheet.slice(0, 5));
 
 
