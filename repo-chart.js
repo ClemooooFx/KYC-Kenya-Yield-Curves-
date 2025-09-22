@@ -71,9 +71,12 @@ function processRepoData(jsonData, chartId, tableId) {
     // Map the continuous dates to the data from the JSON
     const dataMap = new Map();
     sortedData.forEach(row => {
+        const repoValue = cleanAndParse(row['Repo']);
+        const reverseRepoValue = cleanAndParse(row['Reverse Repo']);
+
         dataMap.set(row['Date'], {
-            repo: parseFloat(row['Repo']),
-            reverseRepo: parseFloat(row['Reverse Repo'])
+            repo: repoValue,
+            reverseRepo: reverseRepoValue
         });
     });
 
@@ -196,4 +199,13 @@ function renderMultiLineChart(chartId, labels, datasets) {
             }
         }
     });
+}
+
+function cleanAndParse(value) {
+    if (typeof value === 'string') {
+        // Remove all characters except digits and the decimal point
+        const cleanedString = value.replace(/[^0-9.]/g, '');
+        return parseFloat(cleanedString) || 0; // Return the number or 0 if it's not a valid number
+    }
+    return parseFloat(value) || 0;
 }
