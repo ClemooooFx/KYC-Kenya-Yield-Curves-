@@ -56,6 +56,7 @@ function processCBRData(jsonData, chartId, tableId) {
         label: 'Central Bank Rate',
         data: rates,
         borderColor: '#4e79a7',
+        backgroundColor: '#4e79a7',
         fill: false,
         stepped: 'after',
         tension: 0,
