@@ -16,11 +16,14 @@ function loadAndDisplay(filePath, chartId, tableId) {
         .then(ab => {
             const workbook = XLSX.read(ab, { type: "array" });
             const sheetName = workbook.SheetNames[0];
+            const sheet = workbook.Sheets[sheetName];
+console.log("Cell keys in raw sheet:", Object.keys(sheet));
             // 🟢 Debug what’s inside
     console.log("Sheet names in", filePath, ":", workbook.SheetNames);
     console.log("Raw sheet data:", workbook.Sheets[sheetName]);
 
-            let worksheet = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { range: 1 });
+            let worksheet = XLSX.utils.sheet_to_json(sheet, { header: 1 }); 
+console.log("Raw rows as arrays:", worksheet.slice(0, 5));
             console.log("First few rows:", worksheet.slice(0, 5));
 
 
