@@ -17,6 +17,7 @@ function loadAndDisplay(filePath, chartId, tableId) {
             const workbook = XLSX.read(ab, { type: "array" });
             const sheetName = workbook.SheetNames[0];
             const worksheet = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
+            worksheet = worksheet.filter(row => row && row['Date']);
 
             if (filePath.includes('Treasury Bills Average Rates.xlsx')) {
                 processTBillData(worksheet, chartId, tableId);
@@ -37,8 +38,7 @@ function loadAndDisplay(filePath, chartId, tableId) {
 }
 
 function processRepoData(jsonData, chartId, tableId) {
-    // Filter out rows that are not valid objects, or have a blank "Date"
-    const filteredData = jsonData.filter(row => row && row['Date']);
+    
 
     // Sort the data by date
     const sortedData = filteredData.sort((a, b) => {
