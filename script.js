@@ -325,6 +325,7 @@ function processTBondData(jsonData, chartId, tableId) {
             label: `${tenor} Year Bond`,
             data: avgRatesByDate,
             borderColor: colors[index % colors.length],
+            backgroundColor: colors[index % colors.length],
             fill: false,
             pointRadius: 0,
             pointBackgroundColor: colors[index % colors.length],
