@@ -269,6 +269,7 @@ function processTBillData(jsonData, chartId, tableId) {
             label: `${tenor} Day Bill`,
             data: avgRatesByDate,
             borderColor: tenor === 91 ? 'blue' : tenor === 182 ? 'green' : 'red',
+            backgroundColor: tenor === 91 ? 'blue' : tenor === 182 ? 'green' : 'red',
             fill: false,
             pointRadius: 0,
             pointBackgroundColor: tenor === 91 ? 'blue' : tenor === 182 ? 'green' : 'red',
