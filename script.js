@@ -7,7 +7,7 @@ let cbrData = null;
 let cbrChart = null;
 
 document.addEventListener('DOMContentLoaded', () => {
-    loadAndDisplay('data/Treasury Bills Average Rates (1).xlsx', 't-bills-chart', 't-bills-table');
+    loadAndDisplay('data/Treasury Bills Average Rates.xlsx', 't-bills-chart', 't-bills-table');
     loadAndDisplay('data/Issues of Treasury Bonds.xlsx', 't-bonds-chart', 't-bonds-table');
     loadAndDisplay('data/Central Bank Rate (CBR).xlsx', 'cbr-chart', 'cbr-table');
     loadYieldCurve('yield-curve-chart');
