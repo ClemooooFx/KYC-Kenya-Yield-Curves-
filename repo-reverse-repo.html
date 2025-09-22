@@ -9,6 +9,9 @@
 <body>
     <nav class="navbar">
     <ul class="nav-links">
+        <li class="nav-item">
+            <a href="index.html">Yields</a>
+        </li>
         <li class="nav-item has-dropdown">
             <a href="#">Rates</a>
             <ul class="dropdown">
@@ -35,10 +38,18 @@
 
     <h1>Repo & Reverse Repo</h1>
     
-    <p>This page will display the data for the Repo & Reverse Repo.</p>
+    <div class="main-container">
+        <div class="chart-container">
+            <h2>Repo & Reverse Repo Rates</h2>
+            <canvas id="repo-chart"></canvas>
+        </div>
+    </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.5.1"></script>
+    
+
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@3.5.1"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@1.2.1"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <script src="script.js"></script>
+    <script src="repo-chart.js"></script>
 </body>
 </html>
