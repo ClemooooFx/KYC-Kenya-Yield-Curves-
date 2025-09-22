@@ -39,51 +39,62 @@ function loadAndDisplay(filePath, chartId, tableId) {
 }
 
 function processRepoData(jsonData, chartId, tableId) {
-    
+    // Filter out empty or invalid rows
+    const validData = jsonData.filter(row => row && row['Date']);
 
-    // Sort the data by date
-    const sortedData = jsonData.sort((a, b) => {
+    // Sort the data by date (dd/mm/yyyy → yyyy-mm-dd for sorting)
+    const sortedData = validData.sort((a, b) => {
         const dateA = new Date(a['Date'].split('/').reverse().join('-'));
         const dateB = new Date(b['Date'].split('/').reverse().join('-'));
         return dateA - dateB;
     });
 
-    // Create a continuous sequence of dates from the earliest date to the latest
+    // Create a continuous sequence of dates
     const firstDate = new Date(sortedData[0]['Date'].split('/').reverse().join('-'));
     const lastDate = new Date(sortedData[sortedData.length - 1]['Date'].split('/').reverse().join('-'));
+
     const dates = [];
     const currentDate = new Date(firstDate);
     while (currentDate <= lastDate) {
         dates.push(new Date(currentDate));
         currentDate.setDate(currentDate.getDate() + 1);
     }
-    const dateLabels = dates.map(date => {
+
+    // Format dates as dd/mm/yyyy
+    const formatDate = (date) => {
         const day = date.getDate().toString().padStart(2, '0');
         const month = (date.getMonth() + 1).toString().padStart(2, '0');
         const year = date.getFullYear();
         return `${day}/${month}/${year}`;
-    });
+    };
 
-    const repoData = [];
-    const reverseRepoData = [];
-    let lastRepoValue = 0;
-    let lastReverseRepoValue = 0;
+    const dateLabels = dates.map(formatDate);
 
-    // Map the continuous dates to the data from the JSON
+    // Map input data by normalized date
     const dataMap = new Map();
     sortedData.forEach(row => {
+        const [d, m, y] = row['Date'].split('/');
+        const day = d.padStart(2, '0');
+        const month = m.padStart(2, '0');
+        const year = y;
+        const normalizedDate = `${day}/${month}/${year}`;
+
         const repoValue = cleanAndParse(row['Repo']);
         const reverseRepoValue = cleanAndParse(row['Reverse Repo']);
 
-        dataMap.set(row['Date'], {
+        dataMap.set(normalizedDate, {
             repo: repoValue,
             reverseRepo: reverseRepoValue
         });
     });
 
-    // Populate the datasets for the chart, filling in missing values
-    dates.forEach(date => {
-        const dateString = `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`;
+    // Fill in missing values using last known values
+    const repoData = [];
+    const reverseRepoData = [];
+    let lastRepoValue = 0;
+    let lastReverseRepoValue = 0;
+
+    dateLabels.forEach(dateString => {
         const values = dataMap.get(dateString);
 
         if (values && values.repo !== 0) {
@@ -97,30 +108,38 @@ function processRepoData(jsonData, chartId, tableId) {
         reverseRepoData.push(lastReverseRepoValue.toFixed(3));
     });
 
-    const datasets = [{
-        label: 'Repo Rate',
-        data: repoData,
-        borderColor: '#4e79a7',
-        backgroundColor: '#4e79a7',
-        fill: false,
-        tension: 0.4,
-        pointRadius: 0,
-        pointBackgroundColor: '#4e79a7'
-    }, {
-        label: 'Reverse Repo Rate',
-        data: reverseRepoData,
-        borderColor: '#e15759',
-        backgroundColor: '#e15759',
-        fill: false,
-        tension: 0.4,
-        pointRadius: 0,
-        pointBackgroundColor: '#e15759'
-    }];
+    // Chart datasets
+    const datasets = [
+        {
+            label: 'Repo Rate',
+            data: repoData,
+            borderColor: '#4e79a7',
+            backgroundColor: '#4e79a7',
+            fill: false,
+            tension: 0.4,
+            pointRadius: 0,
+            pointBackgroundColor: '#4e79a7'
+        },
+        {
+            label: 'Reverse Repo Rate',
+            data: reverseRepoData,
+            borderColor: '#e15759',
+            backgroundColor: '#e15759',
+            fill: false,
+            tension: 0.4,
+            pointRadius: 0,
+            pointBackgroundColor: '#e15759'
+        }
+    ];
 
+    // Render chart
     renderMultiLineChart(chartId, dateLabels, datasets);
+
+    // Render table
     const headers = ['Date', 'Repo', 'Reverse Repo'];
     renderTable(tableId, headers, sortedData);
 }
+
 
 function renderMultiLineChart(chartId, labels, datasets) {
     const ctx = document.getElementById(chartId).getContext("2d");
