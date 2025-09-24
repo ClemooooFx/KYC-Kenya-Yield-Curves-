@@ -2,7 +2,7 @@
 
 Chart.register(window.ChartZoom);
 let charts = {};
-const XLSX = window.XLSX;
+
 
 document.addEventListener('DOMContentLoaded', () => {
     loadAndDisplay('data/Commercial Banks Weighted Average Rates.xlsx', 'cbwar-chart', 'cbwar-table');
