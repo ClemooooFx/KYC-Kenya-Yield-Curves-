@@ -107,7 +107,7 @@ function renderMultiLineChart(chartId, labels, datasets) {
             scales: {
                 x: {
                     title: {
-                        display: true,
+                        display: false,
                         text: 'Date (Month/Year)'
                     }
                 },
