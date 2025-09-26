@@ -41,17 +41,26 @@ function loadCSVFile(filePath) {
         })
         .then(csvText => {
             // Parse CSV manually since there are no headers
-            const rows = csvText.trim().split('\n');
+            const rows = csvText.trim().split('\n').filter(line => line.trim().length > 0); // Filter empty lines
+
             return rows.map(row => {
-                const columns = row.split(',');
+                // Use a regex for a more robust split, accommodating possible extra spaces
+                const columns = row.split(',').map(col => col.trim()); 
+                
+                // Assuming exactly 5 columns: Date, Currency, Mean, Buy, Sell
+                if (columns.length < 5) {
+                    // console.warn('Skipping row with insufficient columns:', row); // Optional debugging
+                    return null;
+                }
+                
                 return {
-                    Date: columns[0]?.trim(),
-                    Currency: columns[1]?.trim(),
-                    Mean: columns[2]?.trim(),
-                    Buy: columns[3]?.trim(),
-                    Sell: columns[4]?.trim()
+                    Date: columns[0],
+                    Currency: columns[1],
+                    Mean: columns[2],
+                    Buy: columns[3],
+                    Sell: columns[4]
                 };
-            }).filter(row => row.Date && row.Currency && row.Mean); // Remove invalid rows
+            }).filter(row => row && row.Date && row.Currency && row.Mean); // Filter out rows that are null or missing key data
         });
 }
 
@@ -121,22 +130,35 @@ function processHistoricalData(csvData) {
     const monthlyData = {};
     
     csvData.forEach(row => {
+        // 1. Validate and clean Date
         const date = parseHistoricalDate(row.Date);
-        if (!date || !row.Currency || !row.Mean) return;
+        if (!date || !row.Currency) return;
         
+        // 2. Clean and validate Mean value
+        // Remove all non-numeric characters except for the decimal point and a leading minus sign
+        const meanString = String(row.Mean).trim().replace(/[^\d.]/g, ''); 
+        const mean = parseFloat(meanString);
+        
+        if (isNaN(mean)) {
+             // console.warn(`Skipping row due to invalid Mean: ${row.Mean}`); // Optional debugging
+             return; 
+        }
+
+        // 3. Aggregate by month/year
         const monthYear = `${date.getMonth() + 1}/${date.getFullYear()}`;
         const currency = row.Currency;
-        const mean = parseFloat(row.Mean);
-        
-        if (isNaN(mean)) return;
         
         const key = `${currency}_${monthYear}`;
         
         if (!monthlyData[key]) {
+            // Store the Date object corresponding to the *first* date encountered for sorting
+            // The first day of the month is a better, canonical sort date
+            const canonicalDate = new Date(date.getFullYear(), date.getMonth(), 1); 
+            
             monthlyData[key] = {
                 currency: currency,
                 monthYear: monthYear,
-                date: date,
+                date: canonicalDate, 
                 rates: []
             };
         }
@@ -148,7 +170,7 @@ function processHistoricalData(csvData) {
         Currency: item.currency,
         Date: item.monthYear,
         ExchangeRate: parseFloat((item.rates.reduce((sum, rate) => sum + rate, 0) / item.rates.length).toFixed(2)),
-        sortDate: item.date
+        sortDate: item.date // Use the canonical date for sorting
     }));
 }
 
