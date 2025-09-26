@@ -145,7 +145,7 @@ function renderKesoniaChart(chartId, labels, datasets) {
             scales: {
                 x: {
                     title: {
-                        display: true,
+                        display: false,
                         text: 'Date (Month/Year)'
                     },
                     // Set the maximum value of the scale to create space on the right
