@@ -282,7 +282,7 @@ console.table(sortedData, ["Date", "Currency", "ExchangeRate", "Source"]);
             backgroundColor: colors[index % colors.length],
             fill: false,
             tension: 0.4,
-            pointRadius: 2,
+            pointRadius: 0,
             pointBackgroundColor: colors[index % colors.length]
         };
     });
