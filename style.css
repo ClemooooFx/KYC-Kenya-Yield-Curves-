@@ -179,7 +179,7 @@ button {
     background: #fff;
     text-align: left;
     cursor: pointer;
-    font-size: 14px;
+    font-size: 13px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -199,6 +199,7 @@ button {
     border-top: none;
     border-radius: 0 0 6px 6px;
     max-height: 200px;
+    align-items: center;
     overflow-y: auto;
     display: none;
     z-index: 1000;
