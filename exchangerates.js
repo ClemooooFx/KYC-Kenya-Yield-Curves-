@@ -357,3 +357,44 @@ function renderTable(tableId, headers, data) {
     });
     table.appendChild(tbody);
 }
+
+function initializeCustomDropdown() {
+    const multiselect = document.getElementById('custom-currency-select');
+    if (!multiselect) return;
+    
+    const button = multiselect.querySelector('.multiselect-button');
+    const dropdown = multiselect.querySelector('.multiselect-dropdown');
+    const arrow = button.querySelector('.dropdown-arrow');
+
+    // Toggle dropdown
+    button.addEventListener('click', function() {
+        dropdown.classList.toggle('open');
+        arrow.classList.toggle('open');
+    });
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(event) {
+        if (!multiselect.contains(event.target)) {
+            dropdown.classList.remove('open');
+            arrow.classList.remove('open');
+        }
+    });
+}
+
+function updateSelectedText() {
+    const selectedText = document.querySelector('.selected-text');
+    if (!selectedText) return;
+    
+    const checkboxes = document.querySelectorAll('.multiselect-dropdown input[type="checkbox"]');
+    const selected = Array.from(checkboxes)
+        .filter(cb => cb.checked)
+        .map(cb => cb.nextElementSibling.textContent);
+    
+    if (selected.length === 0) {
+        selectedText.textContent = 'Select currencies...';
+    } else if (selected.length <= 3) {
+        selectedText.textContent = selected.join(', ');
+    } else {
+        selectedText.textContent = `${selected.length} currencies selected`;
+    }
+}
