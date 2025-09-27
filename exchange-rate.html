@@ -37,13 +37,19 @@
 </nav>
 
     <h1>Exchange Rate</h1>
-    
-    <div class="main-container">
-        <div class="chart-container">
-            <h2>Monthly Averages of Exchange Rates</h2>
-            <canvas id="exchange-rate-chart"></canvas>
-        </div>
-    </div>
+
+<div class="main-container">
+  <div class="chart-container">
+    <h2>Monthly Averages of Exchange Rates</h2>
+
+    <!-- Currency controls -->
+    <div id="currency-controls" class="currency-controls"></div>
+
+    <!-- Chart -->
+    <canvas id="exchange-rate-chart"></canvas>
+  </div>
+</div>
+
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.5.1"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
