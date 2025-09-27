@@ -4,23 +4,18 @@ let compareChart = null;
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('Compare page loaded');
     
-    // Check for InflationDataLoader immediately
     if (window.InflationDataLoader) {
-        console.log('Loading inflation data...');
-        // Await the data load immediately
+        console.log('Starting data load...');
+        // CRUCIAL: AWAIT the data load here before doing anything else.
         await window.InflationDataLoader.loadData(); 
-        console.log('Inflation data loaded:', window.InflationDataLoader.getData());
+        console.log('Inflation data loaded (status check):', window.InflationDataLoader.isLoaded());
     } else {
-        console.error('InflationDataLoader not found');
+        console.error('InflationDataLoader not found. Check script loading order.');
     }
     
-    // Initialize empty chart
+    // Initialize chart and setup listeners *after* data load attempt
     initializeCompareChart();
-    
-    // Add checkbox listeners
     setupCheckboxListeners();
-    
-    // Add control button listeners
     setupControlButtons();
 });
 
