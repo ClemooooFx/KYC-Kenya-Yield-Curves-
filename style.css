@@ -359,7 +359,7 @@ button {
 
 .control-button {
     padding: 8px 16px;
-    
+    border: 0.5px solid #f0f0f0;
     background: white;
     border-radius: 0px;
     cursor: pointer;
