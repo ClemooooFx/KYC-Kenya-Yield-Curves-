@@ -192,8 +192,7 @@ button {
 .multiselect-dropdown {
     position: absolute;
     top: 100%;
-    left: 0;
-    right: 0;
+    width: 100%;
     background: #fff;
     border: 1px solid #ccc;
     border-top: none;
@@ -203,6 +202,7 @@ button {
     overflow-y: auto;
     display: none;
     z-index: 1000;
+    box-sizing: border-box;
 }
 
 .multiselect-dropdown.open {
