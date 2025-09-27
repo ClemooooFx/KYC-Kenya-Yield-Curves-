@@ -147,31 +147,28 @@ button {
     width: 100%;
     height: 400px;
 }
-.currency-controls {
-  margin-bottom: 1rem;
-  max-height: 200px;
-  overflow-y: auto;
-  border: 1px solid #ccc;
-  padding: 0.5rem;
-  border-radius: 6px;
-}
-.currency-controls label {
-  display: block;
-  font-size: 0.9rem;
-  cursor: pointer;
-}
 .currency-select {
-  position: relative;   /* create positioning context */
-  z-index: 10;          /* higher than the canvas */
-  display: block;
-  width: 100%;
-  max-width: 400px;
-  min-height: 120px;
-  margin: 0.5rem 0 1rem;
-  padding: 0.5rem;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  background: #fff;     /* ensure text isn’t blending with canvas */
+    position: relative;
+    z-index: 10;
+    display: block;
+    width: 100%;
+    max-width: 400px;
+    min-height: 120px;
+    margin: 0.5rem 0 1rem;
+    padding: 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    background: #fff;
+    font-family: inherit;
+    font-size: 14px;
+}
+
+.custom-multiselect {
+    position: relative;
+    width: 100%;
+    max-width: 400px;
+    margin: 0.5rem 0 1rem;
+    z-index: 10;
 }
 
 
