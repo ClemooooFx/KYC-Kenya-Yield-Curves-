@@ -99,6 +99,7 @@ function processInflationData(jsonData, chartId, tableId) {
             backgroundColor: '#4e79a7',
             borderColor: '#4e79a7',
             borderWidth: 1,
+            order: 2,
             yAxisID: 'y'
         },
         {
@@ -112,7 +113,8 @@ function processInflationData(jsonData, chartId, tableId) {
             pointRadius: 0,
             pointBackgroundColor: '#f28e2c',
             pointBorderColor: '#f28e2c',
-            yAxisID: 'y'
+            yAxisID: 'y',
+            order: 1
         }
     ];
     
