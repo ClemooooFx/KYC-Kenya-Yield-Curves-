@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function loadInflationData() {
     try {
-        const data = await loadExcelFile('data/Inflation Rate.xlsx');
+        const data = await loadExcelFile('data/Inflation Rates.xlsx');
         processInflationData(data, 'inflation-chart', 'inflation-table');
     } catch (error) {
         console.error('Failed to load inflation data:', error);
