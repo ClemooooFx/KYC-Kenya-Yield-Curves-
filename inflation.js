@@ -4,7 +4,10 @@ let inflationData = null;
 let globalInflationData = null;
 
 document.addEventListener('DOMContentLoaded', () => {
-    loadInflationData();
+    // Only run if we're on the inflation page, not compare page
+    if (document.getElementById('inflation-chart')) {
+        loadInflationData();
+    }
 });
 
 async function loadInflationData() {
