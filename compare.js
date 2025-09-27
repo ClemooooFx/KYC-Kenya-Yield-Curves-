@@ -87,8 +87,9 @@ function addInflationSeries(type) {
     }
     
     const inflationData = window.InflationDataLoader.getData();
-    if (!inflationData) {
-        console.error('No inflation data available');
+    // This is the line that's failing. It means globalInflationData is NULL.
+    if (!inflationData) { 
+        console.error('No inflation data available. Data loading must have failed or not completed.');
         return;
     }
     
