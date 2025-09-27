@@ -206,13 +206,25 @@
         </div>
     </div>
 
-    <!-- Load required libraries -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.5.1"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-zoom/1.2.1/chartjs-plugin-zoom.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+   <!-- Load required libraries in exact order -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.5.1"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-zoom/1.2.1/chartjs-plugin-zoom.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<!-- Wait for libraries to load -->
+<script>
+// Small delay to ensure libraries are fully loaded
+setTimeout(() => {
+    const script1 = document.createElement('script');
+    script1.src = 'inflation.js';
+    document.head.appendChild(script1);
     
-    <script src="inflation.js"></script>
-<!-- Then compare script -->
-    <script src="compare.js"></script>
+    script1.onload = () => {
+        const script2 = document.createElement('script');
+        script2.src = 'compare.js';
+        document.head.appendChild(script2);
+    };
+}, 100);
+</script>
 </body>
 </html>
