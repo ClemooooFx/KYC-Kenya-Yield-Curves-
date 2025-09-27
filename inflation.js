@@ -1,6 +1,7 @@
 Chart.register(window.ChartZoom);
 let charts = {};
 let inflationData = null;
+let globalInflationData = null;
 
 document.addEventListener('DOMContentLoaded', () => {
     loadInflationData();
@@ -131,6 +132,12 @@ function processInflationData(jsonData, chartId, tableId) {
     
     const headers = ['Date', 'Month', 'Year', 'Annual Average Inflation', '12-Month Inflation'];
     renderTable(tableId, headers, tableData);
+    globalInflationData = {
+        labels: labels,
+        monthlyInflation: monthlyInflationData,
+        annualInflation: annualInflationData,
+        processedData: processedData
+    };
 }
 
 function renderInflationChart(chartId, labels, datasets) {
@@ -244,3 +251,9 @@ function renderTable(tableId, headers, data) {
     });
     table.appendChild(tbody);
 }
+
+window.InflationDataLoader = {
+    getData: () => globalInflationData,
+    loadData: loadInflationData,
+    isLoaded: () => globalInflationData !== null
+};
