@@ -161,15 +161,17 @@ button {
   cursor: pointer;
 }
 .currency-select {
+  position: relative;   /* create positioning context */
+  z-index: 10;          /* higher than the canvas */
   display: block;
-  width: 100%;          /* stretch full width of container */
-  max-width: 400px;     /* don’t get too wide */
-  height: auto;
-  min-height: 120px;    /* so 5 options fit comfortably */
+  width: 100%;
+  max-width: 400px;
+  min-height: 120px;
   margin: 0.5rem 0 1rem;
   padding: 0.5rem;
   border: 1px solid #ccc;
   border-radius: 6px;
-  font-size: 0.95rem;
+  background: #fff;     /* ensure text isn’t blending with canvas */
 }
+
 
