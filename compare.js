@@ -1,16 +1,10 @@
-// Debug version of compare.js
-// Register ChartZoom plugin only if available
-if (typeof Chart !== 'undefined' && typeof window.chartjsPluginZoom !== 'undefined') {
-    Chart.register(window.chartjsPluginZoom);
-} else {
-    console.log('ChartZoom plugin not available');
-}
+// Compare.js without zoom dependency
 let compareChart = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('Compare page loaded');
     
-    // Wait a bit for inflation.js to load
+    // Wait for inflation.js to load and process
     setTimeout(async () => {
         console.log('Checking for InflationDataLoader:', window.InflationDataLoader);
         
@@ -30,7 +24,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         // Add control button listeners
         setupControlButtons();
-    }, 1000);
+    }, 2000); // Increased timeout to 2 seconds
 });
 
 function setupCheckboxListeners() {
@@ -47,6 +41,8 @@ function setupCheckboxListeners() {
                 removeInflationSeries('12-Month Inflation');
             }
         });
+    } else {
+        console.error('CPI YoY checkbox not found');
     }
     
     // CPI Annual Average checkbox  
@@ -60,30 +56,43 @@ function setupCheckboxListeners() {
                 removeInflationSeries('Annual Average Inflation');
             }
         });
+    } else {
+        console.error('CPI Annual checkbox not found');
     }
 }
 
 function setupControlButtons() {
     // Clear All button
-    document.getElementById('clear-all').addEventListener('click', () => {
-        console.log('Clear all clicked');
-        compareChart.data.datasets = [];
-        compareChart.data.labels = [];
-        compareChart.update();
-        
-        // Uncheck all checkboxes
-        document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
-    });
+    const clearBtn = document.getElementById('clear-all');
+    if (clearBtn) {
+        clearBtn.addEventListener('click', () => {
+            console.log('Clear all clicked');
+            compareChart.data.datasets = [];
+            compareChart.data.labels = [];
+            compareChart.update();
+            
+            // Uncheck all checkboxes
+            document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+        });
+    }
     
-    // Reset Zoom button
-    document.getElementById('reset-zoom').addEventListener('click', () => {
-        console.log('Reset zoom clicked');
-        compareChart.resetZoom();
-    });
+    // Reset Zoom button (disabled for now)
+    const resetBtn = document.getElementById('reset-zoom');
+    if (resetBtn) {
+        resetBtn.addEventListener('click', () => {
+            console.log('Reset zoom clicked - zoom not available');
+            // compareChart.resetZoom(); // Disabled until zoom works
+        });
+    }
 }
 
 function addInflationSeries(type) {
     console.log('Adding inflation series:', type);
+    
+    if (!window.InflationDataLoader) {
+        console.error('InflationDataLoader not available');
+        return;
+    }
     
     const inflationData = window.InflationDataLoader.getData();
     if (!inflationData) {
@@ -121,17 +130,20 @@ function addInflationSeries(type) {
     // Set labels if chart is empty
     if (compareChart.data.labels.length === 0) {
         compareChart.data.labels = inflationData.labels;
+        console.log('Set chart labels:', inflationData.labels.length, 'dates');
     }
     
     // Check if dataset already exists
     const existingIndex = compareChart.data.datasets.findIndex(d => d.label === dataset.label);
     if (existingIndex === -1) {
         compareChart.data.datasets.push(dataset);
-        console.log('Dataset added:', dataset.label);
+        console.log('Dataset added:', dataset.label, 'with', dataset.data.length, 'data points');
+    } else {
+        console.log('Dataset already exists:', dataset.label);
     }
     
     compareChart.update();
-    console.log('Chart updated');
+    console.log('Chart updated, total datasets:', compareChart.data.datasets.length);
 }
 
 function removeInflationSeries(label) {
@@ -155,6 +167,7 @@ function initializeCompareChart() {
         return;
     }
     
+    console.log('Canvas found, creating chart context');
     const ctx = canvas.getContext('2d');
     
     compareChart = new Chart(ctx, {
@@ -166,12 +179,17 @@ function initializeCompareChart() {
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            interaction: {
+                mode: 'index',
+                intersect: false
+            },
             scales: {
                 y: {
                     title: {
                         display: true,
                         text: 'Rate (%)'
-                    }
+                    },
+                    beginAtZero: true
                 },
                 x: {
                     title: {
@@ -181,18 +199,14 @@ function initializeCompareChart() {
                 }
             },
             plugins: {
-                zoom: {
-                    pan: { enabled: true, mode: 'x' },
-                    zoom: {
-                        wheel: { enabled: true },
-                        drag: { enabled: true },
-                        pinch: { enabled: true },
-                        mode: 'x'
-                    }
+                legend: {
+                    display: true,
+                    position: 'top'
                 }
+                // Removed zoom plugin for now
             }
         }
     });
     
-    console.log('Compare chart initialized:', compareChart);
+    console.log('Compare chart initialized successfully');
 }
