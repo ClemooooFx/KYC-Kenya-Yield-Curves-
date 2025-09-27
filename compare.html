@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Compare - Financial Data</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="compare-page">
+    <nav class="navbar">
+        <ul class="nav-links">
+            <li class="nav-item">
+                <a href="index.html">Yields</a>
+            </li>
+            <li class="nav-item has-dropdown">
+                <a href="#">Rates</a>
+                <ul class="dropdown">
+                    <li><a href="central-bank-rate.html">Central Bank Rate</a></li>
+                    <li><a href="repo-reverse-repo.html">Repo & Reverse Repo</a></li>
+                    <li><a href="commercial-banks-rates.html">Commercial Banks Weighted Average Rates</a></li>
+                    <li><a href="interbank-rate.html">Interbank Rate (KESONIA)</a></li>
+                    <li><a href="exchange-rate.html">Exchange Rate</a></li>
+                    <li><a href="inflation-rate.html">Inflation Rate</a></li>
+                </ul>
+            </li>
+            <li class="nav-item has-dropdown">
+                <a href="#">Macroeconomic Statistics</a>
+                <ul class="dropdown">
+                    <li><a href="#">Balance of Payments</a></li>
+                    <li><a href="#">Monetary and Finance</a></li>
+                    <li><a href="#">Government Finance</a></li>
+                    <li><a href="#">National Accounts</a></li>
+                    <li><a href="#">Public Debts</a></li>
+                </ul>
+            </li>
+            <li class="nav-item">
+                <a href="compare.html">Compare</a>
+            </li>
+        </ul>
+    </nav>
+
+    <div class="main-container">
+        <!-- Left Sidebar -->
+        <div class="left-sidebar">
+            <div class="sidebar-section">
+                <h3>Central Bank Rates</h3>
+                <div class="checkbox-group">
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="cbk-benchmark" value="cbk-benchmark">
+                        <label for="cbk-benchmark">CBK Benchmark Rate</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="repo" value="repo">
+                        <label for="repo">Repo</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="reverse-repo" value="reverse-repo">
+                        <label for="reverse-repo">Reverse Repo</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="kesonia" value="kesonia">
+                        <label for="kesonia">KESONIA</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <h3>Commercial Bank Interest Rates</h3>
+                <div class="checkbox-group">
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="lending" value="lending">
+                        <label for="lending">Lending</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="overdraft" value="overdraft">
+                        <label for="overdraft">Overdraft</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="savings" value="savings">
+                        <label for="savings">Savings</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="deposit" value="deposit">
+                        <label for="deposit">Deposit</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <h3>Inflation Rate</h3>
+                <div class="checkbox-group">
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="cpi-yoy" value="cpi-yoy">
+                        <label for="cpi-yoy">CPI YoY (12-Month Inflation)</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="cpi-annual" value="cpi-annual">
+                        <label for="cpi-annual">CPI Annual Average</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <h3>GDP</h3>
+                <div class="checkbox-group">
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="gdp-annual" value="gdp-annual">
+                        <label for="gdp-annual">GDP Annual Change (%)</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Center Chart Area -->
+        <div class="chart-area">
+            <div class="chart-title">Financial Data Comparison</div>
+            
+            <div class="chart-controls">
+                <button class="control-button" id="clear-all">Clear All</button>
+                <button class="control-button" id="reset-zoom">Reset Zoom</button>
+                <button class="control-button" id="export-chart">Export</button>
+            </div>
+
+            <div class="chart-container">
+                <canvas id="compare-chart"></canvas>
+            </div>
+        </div>
+
+        <!-- Right Sidebar -->
+        <div class="right-sidebar">
+            <div class="sidebar-section">
+                <h3>Yield Differentials</h3>
+                <div class="checkbox-group">
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="yield-10y-2y" value="yield-10y-2y">
+                        <label for="yield-10y-2y">10Y - 2Y</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="yield-20y-2y" value="yield-20y-2y">
+                        <label for="yield-20y-2y">20Y - 2Y</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="yield-15y-2y" value="yield-15y-2y">
+                        <label for="yield-15y-2y">15Y - 2Y</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="yield-10y-3y" value="yield-10y-3y">
+                        <label for="yield-10y-3y">10Y - 3Y</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="yield-20y-3y" value="yield-20y-3y">
+                        <label for="yield-20y-3y">20Y - 3Y</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="yield-15y-3y" value="yield-15y-3y">
+                        <label for="yield-15y-3y">15Y - 3Y</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <h3>Government Securities (FXD Yields)</h3>
+                <div class="checkbox-group">
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="3-month" value="3-month">
+                        <label for="3-month">3-Month</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="6-month" value="6-month">
+                        <label for="6-month">6-Month</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="1-year" value="1-year">
+                        <label for="1-year">1-Year</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="2-year" value="2-year">
+                        <label for="2-year">2-Year</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="3-year" value="3-year">
+                        <label for="3-year">3-Year</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="5-year" value="5-year">
+                        <label for="5-year">5-Year</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="10-year" value="10-year">
+                        <label for="10-year">10-Year</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="15-year" value="15-year">
+                        <label for="15-year">15-Year</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="20-year" value="20-year">
+                        <label for="20-year">20-Year</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="25-year" value="25-year">
+                        <label for="25-year">25-Year</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Load required libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.5.1"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-zoom/1.2.1/chartjs-plugin-zoom.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
+    <!-- Compare page script (to be created) -->
+    <script src="compare.js"></script>
+</body>
+</html>
