@@ -227,26 +227,41 @@ function processExchangeRateData(combinedData, chartId, tableId) {
 
 // ===== Chart & controls =====
 function createCurrencyControls(chartId, allDates) {
-    const controlsDiv = document.getElementById("currency-controls");
-    if (!controlsDiv) return;
-    controlsDiv.innerHTML = "";
+    const dropdown = document.querySelector('.multiselect-dropdown');
+    if (!dropdown) return;
+    
+    dropdown.innerHTML = "";
+    
     allCurrencies.forEach(currency => {
-        const label = document.createElement("label");
-        label.style.display = "block";
+        const optionDiv = document.createElement("div");
+        optionDiv.className = "multiselect-option";
+        
         const checkbox = document.createElement("input");
         checkbox.type = "checkbox";
+        checkbox.id = `currency-${currency.replace(/\s+/g, '-').toLowerCase()}`;
         checkbox.value = currency;
         checkbox.checked = defaultCurrencies.includes(currency);
+        
+        const label = document.createElement("label");
+        label.htmlFor = checkbox.id;
+        label.textContent = currency;
+        
         checkbox.addEventListener("change", () => {
             const checkedCurrencies = Array.from(
-                document.querySelectorAll("#currency-controls input:checked")
+                document.querySelectorAll(".multiselect-dropdown input:checked")
             ).map(cb => cb.value);
             updateChart(chartId, allDates, checkedCurrencies);
+            updateSelectedText();
         });
-        label.appendChild(checkbox);
-        label.appendChild(document.createTextNode(" " + currency));
-        controlsDiv.appendChild(label);
+        
+        optionDiv.appendChild(checkbox);
+        optionDiv.appendChild(label);
+        dropdown.appendChild(optionDiv);
     });
+    
+    // Initialize the dropdown functionality
+    initializeCustomDropdown();
+    updateSelectedText();
 }
 
 function updateChart(chartId, allDates, selectedCurrencies) {
