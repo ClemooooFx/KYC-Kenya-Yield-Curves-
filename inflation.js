@@ -3,10 +3,6 @@ let charts = {};
 let inflationData = null;
 let globalInflationData = null;
 
-document.addEventListener('DOMContentLoaded', () => {
-    // Load inflation data on both inflation and compare pages
-    loadInflationData();
-});
 
 async function loadInflationData() {
     try {
