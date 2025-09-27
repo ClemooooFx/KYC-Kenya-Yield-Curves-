@@ -31,36 +31,41 @@ async function loadExchangeRateData() {
     }
 }
 
+// Robust CSV row splitter (handles quoted fields with commas)
+function splitCSVRow(row) {
+    // split on commas not inside quotes
+    return row.split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/).map(col => col.trim().replace(/^"|"$/g, ''));
+}
+
 function loadCSVFile(filePath) {
     return fetch(filePath)
         .then(res => {
-            if (!res.ok) {
-                throw new Error(`HTTP error! status: ${res.status}`);
-            }
+            if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
             return res.text();
         })
         .then(csvText => {
-            // Parse CSV manually since there are no headers
-            const rows = csvText.trim().split('\n').filter(line => line.trim().length > 0); // Filter empty lines
+            const rows = csvText.trim().split('\n').filter(line => line.trim().length > 0);
+
+            // If there is a header row, remove it (common header words)
+            if (rows.length > 0) {
+                const firstCols = splitCSVRow(rows[0]);
+                if (firstCols.some(c => /Date|Currency|Mean|Buy|Sell/i.test(c))) {
+                    rows.shift();
+                }
+            }
 
             return rows.map(row => {
-                // Use a regex for a more robust split, accommodating possible extra spaces
-                const columns = row.split(',').map(col => col.trim()); 
-                
-                // Assuming exactly 5 columns: Date, Currency, Mean, Buy, Sell
-                if (columns.length < 5) {
-                    // console.warn('Skipping row with insufficient columns:', row); // Optional debugging
-                    return null;
-                }
-                
+                const columns = splitCSVRow(row);
+                // ensure at least Date, Currency, Mean (some files may omit Buy/Sell)
+                if (columns.length < 3) return null;
                 return {
                     Date: columns[0],
                     Currency: columns[1],
                     Mean: columns[2],
-                    Buy: columns[3],
-                    Sell: columns[4]
+                    Buy: columns[3] || '',
+                    Sell: columns[4] || ''
                 };
-            }).filter(row => row && row.Date && row.Currency && row.Mean); // Filter out rows that are null or missing key data
+            }).filter(r => r && r.Date && r.Currency && r.Mean);
         });
 }
 
@@ -85,27 +90,86 @@ function isValidDate(dateStr) {
 }
 
 function parseHistoricalDate(dateStr) {
-    // historical.csv format: mm/dd/yyyy
-    if (!dateStr) return null;
-    const parts = dateStr.split('/');
-    if (parts.length !== 3) return null;
+    if (!dateStr || typeof dateStr !== 'string') return null;
+    dateStr = dateStr.trim();
 
-    const [month, day, year] = parts.map(Number);
-    if (!month || !year || month < 1 || month > 12) return null;
+    // Normalize separators to '/'
+    let sep = '/';
+    if (dateStr.includes('-')) sep = '-';
+    const parts = dateStr.split(sep).map(p => p.trim());
 
-    return new Date(year, month - 1, 1); // drop "day"
+    if (parts.length === 3) {
+        // Could be mm/dd/yyyy OR yyyy/mm/dd OR mm/yyyy/dd variants
+        // If first part is 4 digits, treat as yyyy/mm/dd
+        if (parts[0].length === 4) {
+            const year = parseInt(parts[0], 10);
+            const month = parseInt(parts[1], 10);
+            if (!isNaN(year) && !isNaN(month) && month >= 1 && month <= 12) {
+                return new Date(year, month - 1, 1);
+            }
+        } else {
+            // assume mm/dd/yyyy
+            const month = parseInt(parts[0], 10);
+            const day = parseInt(parts[1], 10);
+            const year = parseInt(parts[2], 10);
+            if (!isNaN(month) && !isNaN(day) && !isNaN(year) && month >= 1 && month <= 12) {
+                return new Date(year, month - 1, 1); // canonicalize to first of month
+            }
+        }
+    } else if (parts.length === 2) {
+        // mm/yyyy
+        const month = parseInt(parts[0], 10);
+        const year = parseInt(parts[1], 10);
+        if (!isNaN(month) && !isNaN(year) && month >= 1 && month <= 12) {
+            return new Date(year, month - 1, 1);
+        }
+    }
+
+    return null;
 }
 
+// Accept dd/mm/yyyy OR mm/yyyy OR dd-mm-yyyy
 function parseTradeWeightedDate(dateStr) {
-    // trade weighted excel format: dd/mm/yyyy
-    if (!dateStr) return null;
-    const parts = dateStr.split('/');
-    if (parts.length !== 3) return null;
+    if (!dateStr || typeof dateStr !== 'string') return null;
+    dateStr = dateStr.trim();
 
-    const [day, month, year] = parts.map(Number);
-    if (!month || !year || month < 1 || month > 12) return null;
+    let sep = '/';
+    if (dateStr.includes('-')) sep = '-';
+    const parts = dateStr.split(sep).map(p => p.trim());
 
-    return new Date(year, month - 1, 1); // drop "day"
+    if (parts.length === 3) {
+        // expected dd/mm/yyyy usually, but handle if yyyy is first
+        if (parts[0].length === 4) { // yyyy/mm/dd
+            const year = parseInt(parts[0], 10);
+            const month = parseInt(parts[1], 10);
+            if (!isNaN(year) && !isNaN(month)) return new Date(year, month - 1, 1);
+        } else {
+            // dd/mm/yyyy -> we want month/day/year canonicalized to mm/yyyy
+            const day = parseInt(parts[0], 10);
+            const month = parseInt(parts[1], 10);
+            const year = parseInt(parts[2], 10);
+            if (!isNaN(month) && !isNaN(year) && month >= 1 && month <= 12) {
+                return new Date(year, month - 1, 1);
+            }
+        }
+    } else if (parts.length === 2) {
+        // mm/yyyy (or sometimes mm-yy)
+        const month = parseInt(parts[0], 10);
+        const year = parseInt(parts[1], 10);
+        if (!isNaN(month) && !isNaN(year) && month >= 1 && month <= 12) {
+            return new Date(year, month - 1, 1);
+        }
+    }
+
+    return null;
+}
+
+function cleanCurrencyName(name) {
+    if (!name) return '';
+    return name.toString()
+        .replace(/\s+/g, ' ')      // collapse multiple spaces
+        .replace(/\s*\/\s*/g, '/') // normalize spaces around slash
+        .trim();
 }
 
 function processHistoricalData(csvData) {
@@ -113,12 +177,14 @@ function processHistoricalData(csvData) {
 
     csvData.forEach(row => {
         const date = parseHistoricalDate(row.Date);
-        if (!date) return;
+        if (!date) return; // skip invalid date rows
 
         const monthYear = `${date.getMonth() + 1}/${date.getFullYear()}`;
-        const currency = row.Currency.trim();
+        const currency = cleanCurrencyName(row.Currency);
 
-        const mean = parseFloat(String(row.Mean).replace(/[^\d.]/g, ''));
+        // Clean Mean value (remove currency symbols, commas)
+        const meanString = String(row.Mean).trim().replace(/[, ]+/g, '').replace(/[^\d.\-]/g, '');
+        const mean = parseFloat(meanString);
         if (isNaN(mean)) return;
 
         const key = `${currency}_${monthYear}`;
@@ -128,47 +194,62 @@ function processHistoricalData(csvData) {
         monthlyData[key].rates.push(mean);
     });
 
-    return Object.values(monthlyData).map(item => ({
+    const result = Object.values(monthlyData).map(item => ({
         Currency: item.currency,
         Date: item.monthYear,
-        ExchangeRate: parseFloat((item.rates.reduce((a, b) => a + b, 0) / item.rates.length).toFixed(2)),
-        sortDate: item.date
+        ExchangeRate: parseFloat((item.rates.reduce((s, r) => s + r, 0) / item.rates.length).toFixed(2)),
+        sortDate: item.date,
+        Source: 'CSV'
     }));
+
+    console.log('Processed historical CSV rows:', result.length);
+    return result;
 }
 
 function processTradeWeightedData(excelData) {
     const monthlyData = {};
 
     excelData.forEach(row => {
-        const date = parseTradeWeightedDate(row.Date);
-        if (!date) return;
+        // Excel row might have Date as Date object (if XLSX parsed it), so handle both
+        let parsedDate = null;
+        if (row.Date instanceof Date && !isNaN(row.Date)) {
+            parsedDate = new Date(row.Date.getFullYear(), row.Date.getMonth(), 1);
+        } else {
+            parsedDate = parseTradeWeightedDate(String(row.Date));
+        }
+        if (!parsedDate || !row.Currency) return;
 
-        const monthYear = `${date.getMonth() + 1}/${date.getFullYear()}`;
-        const currency = row.Currency.trim();
-        const rate = parseFloat(row['EXCHANGE RATE']);
+        const monthYear = `${parsedDate.getMonth() + 1}/${parsedDate.getFullYear()}`;
+        const currency = cleanCurrencyName(row.Currency);
+        const rate = parseFloat(String(row['EXCHANGE RATE']).replace(/[, ]+/g, ''));
+
         if (isNaN(rate)) return;
 
         const key = `${currency}_${monthYear}`;
         if (!monthlyData[key]) {
-            monthlyData[key] = { currency, monthYear, date, rates: [] };
+            monthlyData[key] = { currency, monthYear, date: parsedDate, rates: [] };
         }
         monthlyData[key].rates.push(rate);
     });
 
-    return Object.values(monthlyData).map(item => ({
+    const result = Object.values(monthlyData).map(item => ({
         Currency: item.currency,
         Date: item.monthYear,
-        ExchangeRate: parseFloat((item.rates.reduce((a, b) => a + b, 0) / item.rates.length).toFixed(2)),
-        sortDate: item.date
+        ExchangeRate: parseFloat((item.rates.reduce((s, r) => s + r, 0) / item.rates.length).toFixed(2)),
+        sortDate: item.date,
+        Source: 'Excel'
     }));
+
+    console.log('Processed trade-weighted Excel rows:', result.length);
+    return result;
 }
 
 function processExchangeRateData(combinedData, chartId, tableId) {
     // Sort all data by date
     const sortedData = combinedData.sort((a, b) => a.sortDate - b.sortDate);
     
-    // Debugging: log cleaned + combined dataset
-    console.table(sortedData, ["Date", "Currency", "ExchangeRate"]);
+    // inside processExchangeRateData, after sorting:
+console.table(sortedData, ["Date", "Currency", "ExchangeRate", "Source"]);
 
     // Get unique currencies and dates
     const currencies = [...new Set(sortedData.map(item => item.Currency))];
