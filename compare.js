@@ -1,30 +1,27 @@
-// Compare.js without zoom dependency
+// compare.js (Corrected initialization)
 let compareChart = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('Compare page loaded');
     
-    // Wait for inflation.js to load and process
-    setTimeout(async () => {
-        console.log('Checking for InflationDataLoader:', window.InflationDataLoader);
-        
-        if (window.InflationDataLoader) {
-            console.log('Loading inflation data...');
-            await window.InflationDataLoader.loadData();
-            console.log('Inflation data loaded:', window.InflationDataLoader.getData());
-        } else {
-            console.error('InflationDataLoader not found');
-        }
-        
-        // Initialize empty chart
-        initializeCompareChart();
-        
-        // Add checkbox listeners
-        setupCheckboxListeners();
-        
-        // Add control button listeners
-        setupControlButtons();
-    }, 2000); // Increased timeout to 2 seconds
+    // Check for InflationDataLoader immediately
+    if (window.InflationDataLoader) {
+        console.log('Loading inflation data...');
+        // Await the data load immediately
+        await window.InflationDataLoader.loadData(); 
+        console.log('Inflation data loaded:', window.InflationDataLoader.getData());
+    } else {
+        console.error('InflationDataLoader not found');
+    }
+    
+    // Initialize empty chart
+    initializeCompareChart();
+    
+    // Add checkbox listeners
+    setupCheckboxListeners();
+    
+    // Add control button listeners
+    setupControlButtons();
 });
 
 function setupCheckboxListeners() {
