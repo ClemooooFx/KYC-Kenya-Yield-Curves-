@@ -192,10 +192,8 @@ button {
 .multiselect-dropdown {
     position: absolute;
     top: 100%;
-    left: 0;
-    right: 0;
-    margin: 0 auto;
-    width: 250px;
+    left: 50%;
+    transform: translateX(-50%);
     width: 100%;
     background: #fff;
     border: 1px solid #ccc;
