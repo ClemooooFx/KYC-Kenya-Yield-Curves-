@@ -1,6 +1,9 @@
 Chart.register(window.ChartZoom);
 let charts = {};
 let exchangeRateData = null;
+let allCurrencies = [];
+let sortedData = [];
+const defaultCurrencies = ["US DOLLAR", "EURO", "STG POUND"];
 
 document.addEventListener('DOMContentLoaded', () => {
     loadExchangeRateData();
@@ -8,32 +11,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function loadExchangeRateData() {
     try {
-        // Load both files
         const [historicalData, tradeWeightedData] = await Promise.all([
             loadCSVFile('data/historical_data.csv'),
             loadExcelFile('data/TRADE WEIGHTED AVERAGE INDICATIVE RATES.xlsx')
         ]);
         
-        // Process historical CSV data
         const processedHistoricalData = processHistoricalData(historicalData);
-        
-        // Process trade weighted Excel data
         const processedTradeWeightedData = processTradeWeightedData(tradeWeightedData);
-        
-        // Combine the datasets
         const combinedData = [...processedHistoricalData, ...processedTradeWeightedData];
         
-        // Process and display the data
         processExchangeRateData(combinedData, 'exchange-rate-chart', 'exchange-rate-table');
-        
     } catch (error) {
         console.error('Failed to load exchange rate data:', error);
     }
 }
 
-// Robust CSV row splitter (handles quoted fields with commas)
+// ===== CSV + Excel loaders (same as before) =====
 function splitCSVRow(row) {
-    // split on commas not inside quotes
     return row.split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/).map(col => col.trim().replace(/^"|"$/g, ''));
 }
 
@@ -45,18 +39,14 @@ function loadCSVFile(filePath) {
         })
         .then(csvText => {
             const rows = csvText.trim().split('\n').filter(line => line.trim().length > 0);
-
-            // If there is a header row, remove it (common header words)
             if (rows.length > 0) {
                 const firstCols = splitCSVRow(rows[0]);
                 if (firstCols.some(c => /Date|Currency|Mean|Buy|Sell/i.test(c))) {
                     rows.shift();
                 }
             }
-
             return rows.map(row => {
                 const columns = splitCSVRow(row);
-                // ensure at least Date, Currency, Mean (some files may omit Buy/Sell)
                 if (columns.length < 3) return null;
                 return {
                     Date: columns[0],
@@ -72,9 +62,7 @@ function loadCSVFile(filePath) {
 function loadExcelFile(filePath) {
     return fetch(filePath)
         .then(res => {
-            if (!res.ok) {
-                throw new Error(`HTTP error! status: ${res.status}`);
-            }
+            if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
             return res.arrayBuffer();
         })
         .then(ab => {
@@ -84,23 +72,14 @@ function loadExcelFile(filePath) {
         });
 }
 
-function isValidDate(dateStr) {
-    const date = new Date(dateStr);
-    return date instanceof Date && !isNaN(date);
-}
-
+// ===== Date parsers + cleaners (same as before) =====
 function parseHistoricalDate(dateStr) {
     if (!dateStr || typeof dateStr !== 'string') return null;
     dateStr = dateStr.trim();
-
-    // Normalize separators to '/'
     let sep = '/';
     if (dateStr.includes('-')) sep = '-';
     const parts = dateStr.split(sep).map(p => p.trim());
-
     if (parts.length === 3) {
-        // Could be mm/dd/yyyy OR yyyy/mm/dd OR mm/yyyy/dd variants
-        // If first part is 4 digits, treat as yyyy/mm/dd
         if (parts[0].length === 4) {
             const year = parseInt(parts[0], 10);
             const month = parseInt(parts[1], 10);
@@ -108,43 +87,35 @@ function parseHistoricalDate(dateStr) {
                 return new Date(year, month - 1, 1);
             }
         } else {
-            // assume mm/dd/yyyy
             const month = parseInt(parts[0], 10);
             const day = parseInt(parts[1], 10);
             const year = parseInt(parts[2], 10);
             if (!isNaN(month) && !isNaN(day) && !isNaN(year) && month >= 1 && month <= 12) {
-                return new Date(year, month - 1, 1); // canonicalize to first of month
+                return new Date(year, month - 1, 1);
             }
         }
     } else if (parts.length === 2) {
-        // mm/yyyy
         const month = parseInt(parts[0], 10);
         const year = parseInt(parts[1], 10);
         if (!isNaN(month) && !isNaN(year) && month >= 1 && month <= 12) {
             return new Date(year, month - 1, 1);
         }
     }
-
     return null;
 }
 
-// Accept dd/mm/yyyy OR mm/yyyy OR dd-mm-yyyy
 function parseTradeWeightedDate(dateStr) {
     if (!dateStr || typeof dateStr !== 'string') return null;
     dateStr = dateStr.trim();
-
     let sep = '/';
     if (dateStr.includes('-')) sep = '-';
     const parts = dateStr.split(sep).map(p => p.trim());
-
     if (parts.length === 3) {
-        // expected dd/mm/yyyy usually, but handle if yyyy is first
-        if (parts[0].length === 4) { // yyyy/mm/dd
+        if (parts[0].length === 4) {
             const year = parseInt(parts[0], 10);
             const month = parseInt(parts[1], 10);
             if (!isNaN(year) && !isNaN(month)) return new Date(year, month - 1, 1);
         } else {
-            // dd/mm/yyyy -> we want month/day/year canonicalized to mm/yyyy
             const day = parseInt(parts[0], 10);
             const month = parseInt(parts[1], 10);
             const year = parseInt(parts[2], 10);
@@ -153,47 +124,41 @@ function parseTradeWeightedDate(dateStr) {
             }
         }
     } else if (parts.length === 2) {
-        // mm/yyyy (or sometimes mm-yy)
         const month = parseInt(parts[0], 10);
         const year = parseInt(parts[1], 10);
         if (!isNaN(month) && !isNaN(year) && month >= 1 && month <= 12) {
             return new Date(year, month - 1, 1);
         }
     }
-
     return null;
 }
 
 function cleanCurrencyName(name) {
     if (!name) return '';
     return name.toString()
-        .replace(/\s+/g, ' ')      // collapse multiple spaces
-        .replace(/\s*\/\s*/g, '/') // normalize spaces around slash
-        .trim();
+        .replace(/\s+/g, ' ')
+        .replace(/\s*\/\s*/g, '/')
+        .trim()
+        .toUpperCase();
 }
 
+// ===== Data processors (same as before) =====
 function processHistoricalData(csvData) {
     const monthlyData = {};
-
     csvData.forEach(row => {
         const date = parseHistoricalDate(row.Date);
-        if (!date) return; // skip invalid date rows
-
+        if (!date) return;
         const monthYear = `${date.getMonth() + 1}/${date.getFullYear()}`;
         const currency = cleanCurrencyName(row.Currency);
-
-        // Clean Mean value (remove currency symbols, commas)
         const meanString = String(row.Mean).trim().replace(/[, ]+/g, '').replace(/[^\d.\-]/g, '');
         const mean = parseFloat(meanString);
         if (isNaN(mean)) return;
-
         const key = `${currency}_${monthYear}`;
         if (!monthlyData[key]) {
             monthlyData[key] = { currency, monthYear, date, rates: [] };
         }
         monthlyData[key].rates.push(mean);
     });
-
     const result = Object.values(monthlyData).map(item => ({
         Currency: item.currency,
         Date: item.monthYear,
@@ -201,16 +166,13 @@ function processHistoricalData(csvData) {
         sortDate: item.date,
         Source: 'CSV'
     }));
-
     console.log('Processed historical CSV rows:', result.length);
     return result;
 }
 
 function processTradeWeightedData(excelData) {
     const monthlyData = {};
-
     excelData.forEach(row => {
-        // Excel row might have Date as Date object (if XLSX parsed it), so handle both
         let parsedDate = null;
         if (row.Date instanceof Date && !isNaN(row.Date)) {
             parsedDate = new Date(row.Date.getFullYear(), row.Date.getMonth(), 1);
@@ -218,20 +180,16 @@ function processTradeWeightedData(excelData) {
             parsedDate = parseTradeWeightedDate(String(row.Date));
         }
         if (!parsedDate || !row.Currency) return;
-
         const monthYear = `${parsedDate.getMonth() + 1}/${parsedDate.getFullYear()}`;
         const currency = cleanCurrencyName(row.Currency);
         const rate = parseFloat(String(row['EXCHANGE RATE']).replace(/[, ]+/g, ''));
-
         if (isNaN(rate)) return;
-
         const key = `${currency}_${monthYear}`;
         if (!monthlyData[key]) {
             monthlyData[key] = { currency, monthYear, date: parsedDate, rates: [] };
         }
         monthlyData[key].rates.push(rate);
     });
-
     const result = Object.values(monthlyData).map(item => ({
         Currency: item.currency,
         Date: item.monthYear,
@@ -239,57 +197,26 @@ function processTradeWeightedData(excelData) {
         sortDate: item.date,
         Source: 'Excel'
     }));
-
     console.log('Processed trade-weighted Excel rows:', result.length);
     return result;
 }
 
+// ===== Main processor with checkbox controls =====
 function processExchangeRateData(combinedData, chartId, tableId) {
-    // Sort all data by date
-    const sortedData = combinedData.sort((a, b) => a.sortDate - b.sortDate);
-    
-    // inside processExchangeRateData, after sorting:
-console.table(sortedData, ["Date", "Currency", "ExchangeRate", "Source"]);
+    sortedData = combinedData.sort((a, b) => a.sortDate - b.sortDate);
+    console.table(sortedData, ["Date", "Currency", "ExchangeRate", "Source"]);
 
-    // Get unique currencies and dates
-    const currencies = [...new Set(sortedData.map(item => item.Currency))];
+    allCurrencies = [...new Set(sortedData.map(item => item.Currency))].sort();
     const allDates = [...new Set(sortedData.map(item => item.Date))];
-    
-    // Sort dates chronologically
     allDates.sort((a, b) => {
         const [monthA, yearA] = a.split('/').map(Number);
         const [monthB, yearB] = b.split('/').map(Number);
         return yearA - yearB || monthA - monthB;
     });
-    
-    // Create datasets for each currency
-    const colors = [
-        '#4e79a7', '#f28e2c', '#e15759', '#76b7b2', '#59a14f',
-        '#edc949', '#af7aa1', '#ff9da7', '#9c755f', '#bab0ab'
-    ];
-    
-    const datasets = currencies.map((currency, index) => {
-        const currencyData = sortedData.filter(item => item.Currency === currency);
-        const dataPoints = allDates.map(date => {
-            const dataPoint = currencyData.find(item => item.Date === date);
-            return dataPoint ? dataPoint.ExchangeRate : null;
-        });
-        
-        return {
-            label: currency,
-            data: dataPoints,
-            borderColor: colors[index % colors.length],
-            backgroundColor: colors[index % colors.length],
-            fill: false,
-            tension: 0.4,
-            pointRadius: 0,
-            pointBackgroundColor: colors[index % colors.length]
-        };
-    });
-    
-    renderMultiLineChart(chartId, allDates, datasets);
-    
-    // Prepare table data (HTML table, optional)
+
+    createCurrencyControls(chartId, allDates);
+    updateChart(chartId, allDates, defaultCurrencies);
+
     const headers = ['Date', 'Currency', 'Exchange Rate'];
     renderTable(tableId, headers, sortedData.map(item => ({
         'Date': item.Date,
@@ -298,55 +225,76 @@ console.table(sortedData, ["Date", "Currency", "ExchangeRate", "Source"]);
     })));
 }
 
+// ===== Chart & controls =====
+function createCurrencyControls(chartId, allDates) {
+    const controlsDiv = document.getElementById("currency-controls");
+    if (!controlsDiv) return;
+    controlsDiv.innerHTML = "";
+    allCurrencies.forEach(currency => {
+        const label = document.createElement("label");
+        label.style.display = "block";
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.value = currency;
+        checkbox.checked = defaultCurrencies.includes(currency);
+        checkbox.addEventListener("change", () => {
+            const checkedCurrencies = Array.from(
+                document.querySelectorAll("#currency-controls input:checked")
+            ).map(cb => cb.value);
+            updateChart(chartId, allDates, checkedCurrencies);
+        });
+        label.appendChild(checkbox);
+        label.appendChild(document.createTextNode(" " + currency));
+        controlsDiv.appendChild(label);
+    });
+}
+
+function updateChart(chartId, allDates, selectedCurrencies) {
+    const colors = [
+        '#4e79a7', '#f28e2c', '#e15759', '#76b7b2', '#59a14f',
+        '#edc949', '#af7aa1', '#ff9da7', '#9c755f', '#bab0ab'
+    ];
+    const datasets = selectedCurrencies.map((currency, index) => {
+        const currencyData = sortedData.filter(item => item.Currency === currency);
+        const dataPoints = allDates.map(date => {
+            const dataPoint = currencyData.find(item => item.Date === date);
+            return dataPoint ? dataPoint.ExchangeRate : null;
+        });
+        return {
+            label: currency,
+            data: dataPoints,
+            borderColor: colors[index % colors.length],
+            backgroundColor: colors[index % colors.length],
+            fill: false,
+            tension: 0.4,
+            pointRadius: 0
+        };
+    });
+    renderMultiLineChart(chartId, allDates, datasets);
+}
 
 function renderMultiLineChart(chartId, labels, datasets) {
     const ctx = document.getElementById(chartId).getContext("2d");
     if (charts[chartId]) {
         charts[chartId].destroy();
     }
-
-    const smoothDatasets = datasets.map(dataset => {
-        return {
-            ...dataset,
-            tension: 0.4
-        };
-    });
-
     charts[chartId] = new Chart(ctx, {
         type: "line",
-        data: {
-            labels: labels,
-            datasets: smoothDatasets,
-        },
+        data: { labels, datasets },
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            interaction: {
-                mode: 'index',
-                intersect: false
-            },
+            interaction: { mode: 'index', intersect: false },
             scales: {
-                x: {
-                    title: {
-                        display: true,
-                        text: 'Date (Month/Year)'
-                    }
-                },
-                y: {
-                    title: {
-                        display: true,
-                        text: 'Exchange Rate'
-                    }
-                }
+                x: { title: { display: true, text: 'Date (Month/Year)' } },
+                y: { title: { display: true, text: 'Exchange Rate' } }
             },
             plugins: {
                 tooltip: {
                     callbacks: {
                         label: function(context) {
                             let label = context.dataset.label || '';
-                            if (label) {
-                                label += ': ';
-                            }
+                            if (label) label += ': ';
                             if (context.parsed.y !== null) {
                                 label += `${context.parsed.y.toFixed(2)}`;
                             }
@@ -355,20 +303,11 @@ function renderMultiLineChart(chartId, labels, datasets) {
                     }
                 },
                 zoom: {
-                    pan: {
-                        enabled: true,
-                        mode: 'x',
-                    },
+                    pan: { enabled: true, mode: 'x' },
                     zoom: {
-                        wheel: {
-                            enabled: true,
-                        },
-                        drag: {
-                            enabled: true,
-                        },
-                        pinch: {
-                            enabled: true
-                        },
+                        wheel: { enabled: true },
+                        drag: { enabled: true },
+                        pinch: { enabled: true },
                         mode: 'x',
                     }
                 }
@@ -377,14 +316,11 @@ function renderMultiLineChart(chartId, labels, datasets) {
     });
 }
 
+// ===== Table (unchanged) =====
 function renderTable(tableId, headers, data) {
     const table = document.getElementById(tableId);
     if (!table) return;
-    
-    // Clear existing content
     table.innerHTML = '';
-    
-    // Create header
     const thead = document.createElement('thead');
     const headerRow = document.createElement('tr');
     headers.forEach(header => {
@@ -394,8 +330,6 @@ function renderTable(tableId, headers, data) {
     });
     thead.appendChild(headerRow);
     table.appendChild(thead);
-    
-    // Create body
     const tbody = document.createElement('tbody');
     data.forEach(row => {
         const tr = document.createElement('tr');
