@@ -259,7 +259,7 @@ button {
 /* Sidebar styling */
 .left-sidebar, .right-sidebar {
     flex: 0 0 280px;
-    background: #f8f9fa;
+    background: #333;
     padding: 20px;
     border-radius: 8px;
     height: fit-content;
