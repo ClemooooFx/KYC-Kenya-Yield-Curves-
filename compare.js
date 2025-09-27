@@ -1,5 +1,10 @@
 // Debug version of compare.js
-Chart.register(window.chartjsPluginZoom);
+// Register ChartZoom plugin only if available
+if (typeof Chart !== 'undefined' && typeof window.chartjsPluginZoom !== 'undefined') {
+    Chart.register(window.chartjsPluginZoom);
+} else {
+    console.log('ChartZoom plugin not available');
+}
 let compareChart = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
