@@ -53,5 +53,16 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-zoom/1.2.1/chartjs-plugin-zoom.min.js"></script>
     <script src="inflation.js"></script>
+        <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Check if the loader exists, then call its load function
+            if (window.InflationDataLoader) {
+                // This function is defined in inflation.js and fetches the data
+                window.InflationDataLoader.loadData();
+            } else {
+                console.error("Inflation data loader not found.");
+            }
+        });
+    </script>
 </body>
 </html>
