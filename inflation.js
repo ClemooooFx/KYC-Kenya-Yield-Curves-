@@ -38,12 +38,12 @@ function getMonthNumber(monthName) {
         'April': 4, 'apr': 4,
         'May': 5,
         'June': 6, 'jun': 6,
-        'july': 7, 'jul': 7,
-        'august': 8, 'aug': 8,
-        'september': 9, 'sep': 9, 'sept': 9,
-        'october': 10, 'oct': 10,
-        'november': 11, 'nov': 11,
-        'december': 12, 'dec': 12
+        'July': 7, 'jul': 7,
+        'August': 8, 'aug': 8,
+        'September': 9, 'sep': 9, 'sept': 9,
+        'October': 10, 'oct': 10,
+        'November': 11, 'nov': 11,
+        'December': 12, 'dec': 12
     };
     
     if (!monthName) return null;
