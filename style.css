@@ -166,23 +166,25 @@ button {
 .custom-multiselect {
     position: relative;
     width: 100%;
-    max-width: 250px; /* Reduced from 400px to make it slimmer */
-    margin: 0.5rem auto 1rem; /* Changed from '0 1rem' to 'auto' to center it */
+    max-width: 250px;
+    margin: 0.5rem auto 1rem; /* This centers the whole container */
     z-index: 10;
 }
 
 .multiselect-button {
     width: 100%;
-    padding: 0.5rem 0.5rem;
+    padding: 0.5rem 0.75rem;
     border: 1px solid #ccc;
     border-radius: 6px;
     background: #fff;
     text-align: left;
     cursor: pointer;
-    font-size: 13px;
+    font-size: 14px;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    margin: 0; /* Remove any margin that might offset it */
+    box-sizing: border-box; /* Ensure padding doesn't affect centering */
 }
 
 .multiselect-button:hover {
