@@ -109,7 +109,7 @@ function processInflationData(jsonData, chartId, tableId) {
             backgroundColor: '#f28e2c',
             fill: false,
             tension: 0.4,
-            pointRadius: 3,
+            pointRadius: 0,
             pointBackgroundColor: '#f28e2c',
             pointBorderColor: '#f28e2c',
             yAxisID: 'y'
