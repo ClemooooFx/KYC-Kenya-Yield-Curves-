@@ -161,9 +161,15 @@ button {
   cursor: pointer;
 }
 .currency-select {
-  margin-bottom: 1rem;
-  width: 100%;
+  display: block;
+  width: 100%;          /* stretch full width of container */
+  max-width: 400px;     /* don’t get too wide */
+  height: auto;
+  min-height: 120px;    /* so 5 options fit comfortably */
+  margin: 0.5rem 0 1rem;
   padding: 0.5rem;
+  border: 1px solid #ccc;
   border-radius: 6px;
+  font-size: 0.95rem;
 }
 
