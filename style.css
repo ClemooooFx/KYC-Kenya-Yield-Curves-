@@ -359,9 +359,9 @@ button {
 
 .control-button {
     padding: 8px 16px;
-    border: 1px solid #ddd;
+    
     background: white;
-    border-radius: 6px;
+    border-radius: 0px;
     cursor: pointer;
     font-size: 14px;
     transition: all 0.2s ease;
@@ -370,8 +370,7 @@ button {
 
 .control-button:hover {
     background: #f0f0f0;
-    border-color: #4e79a7;
-    transform: translateY(-1px);
+    
 }
 
 .control-button.active {
