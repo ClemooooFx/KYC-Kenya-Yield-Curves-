@@ -42,11 +42,18 @@
   <div class="chart-container">
     <h2>Monthly Averages of Exchange Rates</h2>
 
-     
+     <div class="custom-multiselect" id="custom-currency-select">
+    <button class="multiselect-button" type="button">
+        <span class="selected-text">Select currencies...</span>
+        <span class="dropdown-arrow">▼</span>
+    </button>
+    <div class="multiselect-dropdown">
+        <!-- Checkbox options will be populated by JavaScript -->
+    </div>
+</div>
     <!-- Chart -->
     <canvas id="exchange-rate-chart"></canvas>
-       <!-- Multi-select dropdown -->
-    <select id="currency-select" class="currency-select"></select>
+
   </div>
 </div>
 
