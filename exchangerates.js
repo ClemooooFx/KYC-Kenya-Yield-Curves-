@@ -85,126 +85,80 @@ function isValidDate(dateStr) {
 }
 
 function parseHistoricalDate(dateStr) {
-    // Format: mm/dd/yyyy
-    if (!dateStr || typeof dateStr !== 'string') return null;
-    
-    const dateParts = dateStr.split('/');
-    if (dateParts.length !== 3) return null;
-    
-    const month = parseInt(dateParts[0]);
-    const day = parseInt(dateParts[1]);
-    const year = parseInt(dateParts[2]);
-    
-    // Validate date components
-    if (isNaN(month) || isNaN(day) || isNaN(year) || 
-        month < 1 || month > 12 || day < 1 || day > 31 || year < 1900) {
-        return null;
-    }
-    
-    const date = new Date(year, month - 1, day);
-    return isValidDate(date) ? date : null;
+    // historical.csv format: mm/dd/yyyy
+    if (!dateStr) return null;
+    const parts = dateStr.split('/');
+    if (parts.length !== 3) return null;
+
+    const [month, day, year] = parts.map(Number);
+    if (!month || !year || month < 1 || month > 12) return null;
+
+    return new Date(year, month - 1, 1); // drop "day"
 }
 
 function parseTradeWeightedDate(dateStr) {
-    // Format: dd/mm/yyyy
-    if (!dateStr || typeof dateStr !== 'string') return null;
-    
-    const dateParts = dateStr.split('/');
-    if (dateParts.length !== 3) return null;
-    
-    const day = parseInt(dateParts[0]);
-    const month = parseInt(dateParts[1]);
-    const year = parseInt(dateParts[2]);
-    
-    // Validate date components
-    if (isNaN(day) || isNaN(month) || isNaN(year) || 
-        month < 1 || month > 12 || day < 1 || day > 31 || year < 1900) {
-        return null;
-    }
-    
-    const date = new Date(year, month - 1, day);
-    return isValidDate(date) ? date : null;
+    // trade weighted excel format: dd/mm/yyyy
+    if (!dateStr) return null;
+    const parts = dateStr.split('/');
+    if (parts.length !== 3) return null;
+
+    const [day, month, year] = parts.map(Number);
+    if (!month || !year || month < 1 || month > 12) return null;
+
+    return new Date(year, month - 1, 1); // drop "day"
 }
 
 function processHistoricalData(csvData) {
     const monthlyData = {};
-    
-    csvData.forEach(row => {
-        // 1. Validate and clean Date
-        const date = parseHistoricalDate(row.Date);
-        if (!date || !row.Currency) return;
-        
-        // 2. Clean and validate Mean value
-        // Remove all non-numeric characters except for the decimal point and a leading minus sign
-        const meanString = String(row.Mean).trim().replace(/[^\d.]/g, ''); 
-        const mean = parseFloat(meanString);
-        
-        if (isNaN(mean)) {
-             // console.warn(`Skipping row due to invalid Mean: ${row.Mean}`); // Optional debugging
-             return; 
-        }
 
-        // 3. Aggregate by month/year
+    csvData.forEach(row => {
+        const date = parseHistoricalDate(row.Date);
+        if (!date) return;
+
         const monthYear = `${date.getMonth() + 1}/${date.getFullYear()}`;
-        const currency = row.Currency;
-        
+        const currency = row.Currency.trim();
+
+        const mean = parseFloat(String(row.Mean).replace(/[^\d.]/g, ''));
+        if (isNaN(mean)) return;
+
         const key = `${currency}_${monthYear}`;
-        
         if (!monthlyData[key]) {
-            // Store the Date object corresponding to the *first* date encountered for sorting
-            // The first day of the month is a better, canonical sort date
-            const canonicalDate = new Date(date.getFullYear(), date.getMonth(), 1); 
-            
-            monthlyData[key] = {
-                currency: currency,
-                monthYear: monthYear,
-                date: canonicalDate, 
-                rates: []
-            };
+            monthlyData[key] = { currency, monthYear, date, rates: [] };
         }
         monthlyData[key].rates.push(mean);
     });
-    
-    // Calculate monthly averages
+
     return Object.values(monthlyData).map(item => ({
         Currency: item.currency,
         Date: item.monthYear,
-        ExchangeRate: parseFloat((item.rates.reduce((sum, rate) => sum + rate, 0) / item.rates.length).toFixed(2)),
-        sortDate: item.date // Use the canonical date for sorting
+        ExchangeRate: parseFloat((item.rates.reduce((a, b) => a + b, 0) / item.rates.length).toFixed(2)),
+        sortDate: item.date
     }));
 }
 
 function processTradeWeightedData(excelData) {
     const monthlyData = {};
-    
+
     excelData.forEach(row => {
         const date = parseTradeWeightedDate(row.Date);
-        if (!date || !row.Currency || !row['EXCHANGE RATE']) return;
-        
+        if (!date) return;
+
         const monthYear = `${date.getMonth() + 1}/${date.getFullYear()}`;
-        const currency = row.Currency;
-        const exchangeRate = parseFloat(row['EXCHANGE RATE']);
-        
-        if (isNaN(exchangeRate)) return;
-        
+        const currency = row.Currency.trim();
+        const rate = parseFloat(row['EXCHANGE RATE']);
+        if (isNaN(rate)) return;
+
         const key = `${currency}_${monthYear}`;
-        
         if (!monthlyData[key]) {
-            monthlyData[key] = {
-                currency: currency,
-                monthYear: monthYear,
-                date: date,
-                rates: []
-            };
+            monthlyData[key] = { currency, monthYear, date, rates: [] };
         }
-        monthlyData[key].rates.push(exchangeRate);
+        monthlyData[key].rates.push(rate);
     });
-    
-    // Calculate monthly averages
+
     return Object.values(monthlyData).map(item => ({
         Currency: item.currency,
         Date: item.monthYear,
-        ExchangeRate: parseFloat((item.rates.reduce((sum, rate) => sum + rate, 0) / item.rates.length).toFixed(2)),
+        ExchangeRate: parseFloat((item.rates.reduce((a, b) => a + b, 0) / item.rates.length).toFixed(2)),
         sortDate: item.date
     }));
 }
@@ -213,6 +167,9 @@ function processExchangeRateData(combinedData, chartId, tableId) {
     // Sort all data by date
     const sortedData = combinedData.sort((a, b) => a.sortDate - b.sortDate);
     
+    // Debugging: log cleaned + combined dataset
+    console.table(sortedData, ["Date", "Currency", "ExchangeRate"]);
+
     // Get unique currencies and dates
     const currencies = [...new Set(sortedData.map(item => item.Currency))];
     const allDates = [...new Set(sortedData.map(item => item.Date))];
@@ -251,7 +208,7 @@ function processExchangeRateData(combinedData, chartId, tableId) {
     
     renderMultiLineChart(chartId, allDates, datasets);
     
-    // Prepare table data
+    // Prepare table data (HTML table, optional)
     const headers = ['Date', 'Currency', 'Exchange Rate'];
     renderTable(tableId, headers, sortedData.map(item => ({
         'Date': item.Date,
@@ -259,6 +216,7 @@ function processExchangeRateData(combinedData, chartId, tableId) {
         'Exchange Rate': item.ExchangeRate.toFixed(2)
     })));
 }
+
 
 function renderMultiLineChart(chartId, labels, datasets) {
     const ctx = document.getElementById(chartId).getContext("2d");
