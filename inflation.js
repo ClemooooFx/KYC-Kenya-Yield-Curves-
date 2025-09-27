@@ -6,12 +6,28 @@ let globalInflationData = null;
 
 async function loadInflationData() {
     try {
-        const data = await loadExcelFile('data/Inflation Rates.xlsx');
-        processInflationData(data, 'inflation-chart', 'inflation-table');
+        const globalInflationData = await fetchAndProcessData(); // Assume this fetches the data
+        
+        // --- FIX REQUIRED HERE ---
+        
+        // 1. Check if the element required for the inflation-only page exists
+        const inflationChartCanvas = document.getElementById('inflation-chart');
+        
+        // 2. ONLY call the chart/table rendering functions if the element is present
+        if (inflationChartCanvas) {
+            console.log("Rendering chart for inflation-rate.html");
+            renderInflationChart(globalInflationData); // This is where the error originates
+            renderInflationTable(globalInflationData);
+        }
+
+        // The data is now successfully loaded, whether the chart rendered or not
+        window.InflationDataLoader.setGlobalData(globalInflationData); 
+        
     } catch (error) {
-        console.error('Failed to load inflation data:', error);
+        console.error("Failed to load inflation data:", error);
     }
 }
+
 
 function loadExcelFile(filePath) {
     return fetch(filePath)
@@ -251,6 +267,11 @@ function renderTable(tableId, headers, data) {
 
 window.InflationDataLoader = {
     getData: () => globalInflationData,
-    loadData: loadInflationData,
-    isLoaded: () => globalInflationData !== null
+    isLoaded: () => globalInflationData !== null,
+    // Add a function to safely set the data
+    setGlobalData: (data) => {
+        globalInflationData = data;
+    },
+    // The loadData function should call the setGlobalData upon success (as shown in Step 1)
+    loadData: loadInflationData, 
 };
