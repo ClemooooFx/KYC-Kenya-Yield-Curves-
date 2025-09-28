@@ -1,8 +1,8 @@
-// cbwar-data.js - Commercial Banks Weighted Average Rates data loader
+// cbwar-chart.js - Commercial Banks Weighted Average Rates data loader
 
 // Global Variables
 Chart.register(window.ChartZoom);
-let charts = {};
+let cbwarCharts = {};
 let globalCBWARData = null;
 
 const CBWAR_FILE_PATH = 'data/Commercial Banks Weighted Average Rates.xlsx';
@@ -100,8 +100,8 @@ function renderCBWARChart(data) {
     if (!canvas) return;
     
     const ctx = canvas.getContext("2d");
-    if (charts[chartId]) {
-        charts[chartId].destroy();
+    if (cbwarCharts[chartId]) {
+        cbwarCharts[chartId].destroy();
     }
 
     const datasets = chartProperties.map((prop, index) => {
@@ -117,7 +117,7 @@ function renderCBWARChart(data) {
         };
     });
 
-    charts[chartId] = new Chart(ctx, {
+    cbwarCharts[chartId] = new Chart(ctx, {
         type: "line",
         data: {
             labels: data.labels,
