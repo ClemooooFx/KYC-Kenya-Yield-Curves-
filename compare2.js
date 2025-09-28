@@ -1,37 +1,35 @@
 // compare.js
 // Self-contained: loads Excel files, computes monthly averages, aligns series, and hooks up UI controls in compare.html
 const seriesColors = {
-    // --- Government Securities: T-Bills & T-Bonds ---
-    // Short Term Bills (using blues/teals)
-    "91 Day Bill": '#4e79a7',      // Blue (COLORS[0])
-    "182 Day Bill": '#76b7b2',     // Teal (COLORS[3])
-    "364 Day Bill": '#7bdff2',     // Light Blue (COLORS[10])
-
-    // Long Term Bonds (using greens/purples/pinks)
-    "2 Year Bond": '#59a14f',      // Green (COLORS[4])
-    "3 Year Bond": '#af7aa1',      // Purple (COLORS[6])
-    "5 Year Bond": '#ff9da7',      // Pink (COLORS[7])
-    "10 Year Bond": '#9c755f',     // Brown (COLORS[8])
-    "15 Year Bond": '#bab0ac',     // Gray (COLORS[9])
-    "20 Year Bond": '#c2b6ff',     // Lavender (COLORS[11])
-    "25 Year Bond": '#4e79a7',     // Repeats Blue (COLORS[0])
-
-    // --- Central Bank Rates Group (Core Rates) ---
-    "Central Bank Rate": '#e15759', // Red (COLORS[2]) - Highlighted as key
-    "Repo Rate": '#f28e2b',         // Orange (COLORS[1])
-    "Reverse Repo Rate": '#edc948', // Yellow (COLORS[5])
-    "KESONIA": '#59a14f',           // Green (COLORS[4])
-
-    // --- CBWAR Group (Commercial Banks Weighted Average Rates) ---
-    // Distinct set of colors, ensuring Lending/Overdraft are noticeable
-    "Lending": '#e15759',           // Red (COLORS[2]) - Highlighted
-    "Overdraft": '#f28e2b',         // Orange (COLORS[1])
-    "Deposit": '#76b7b2',           // Teal (COLORS[3])
-    "Savings": '#af7aa1',           // Purple (COLORS[6])
-
-    // --- Inflation Group ---
-    "12-Month Inflation": '#9c755f', // Brown (COLORS[8])
-    "Annual Average Inflation": '#bab0ac' // Gray (COLORS[9])
+    // --- Government Securities: Short Term (Blue Family) ---
+    "91 Day Bill": '#1e3a8a',       // Navy Blue
+    "182 Day Bill": '#3b82f6',      // Medium Blue  
+    "364 Day Bill": '#60a5fa',      // Light Blue
+    
+    // --- Government Securities: Long Term (Browns/Greys/Black Family) ---
+    "2 Year Bond": '#78716c',        // Warm Grey
+    "3 Year Bond": '#a3a3a3',       // Medium Grey
+    "5 Year Bond": '#525252',       // Dark Grey
+    "10 Year Bond": '#92400e',      // Dark Brown
+    "15 Year Bond": '#a16207',      // Medium Brown
+    "20 Year Bond": '#d97706',      // Light Brown
+    "25 Year Bond": '#000000',      // Black
+    
+    // --- Central Bank Rates (Red Family) ---
+    "Central Bank Rate": '#dc2626', // Red
+    "Repo Rate": '#991b1b',         // Dark Red/Maroon
+    "Reverse Repo Rate": '#7f1d1d', // Burgundy
+    "KESONIA": '#b91c1c',           // Crimson
+    
+    // --- CBWAR Group (Green Family) ---
+    "Savings": '#86efac',           // Light Green
+    "Deposit": '#4ade80',           // Medium Light Green  
+    "Overdraft": '#16a34a',         // Dark Green
+    "Lending": '#15803d',           // Very Dark Green
+    
+    // --- Inflation Group (Purple/Pink Family) ---
+    "12-Month Inflation": '#a855f7', // Purple
+    "Annual Average Inflation": '#ec4899' // Pink
 };
 
 (function () {
