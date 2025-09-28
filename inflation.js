@@ -5,6 +5,11 @@ Chart.register(window.ChartZoom);
 let charts = {};
 // We only need one global variable to hold the processed data
 let globalInflationData = null;
+console.log("Inflation data structure created:", {
+    labels: globalInflationData.labels ? globalInflationData.labels.length : 'undefined',
+    monthlyInflation: globalInflationData.monthlyInflation ? globalInflationData.monthlyInflation.length : 'undefined',
+    annualInflation: globalInflationData.annualInflation ? globalInflationData.annualInflation.length : 'undefined'
+});
 
 // The file path for the Excel data
 const EXCEL_FILE_PATH = 'data/Inflation Rates.xlsx'; // Adjust path if necessary
