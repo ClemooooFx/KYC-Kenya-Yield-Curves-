@@ -1,4 +1,5 @@
 // compare.js (Corrected initialization)
+Chart.register(window.ChartZoom);
 let compareChart = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -192,11 +193,38 @@ function initializeCompareChart() {
                 }
             },
             plugins: {
-                legend: {
-                    display: true,
-                    position: 'top'
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            if (context.parsed.y !== null) {
+                                label += `${context.parsed.y.toFixed(2)}%`;
+                            }
+                            return label;
+                        }
+                    }
+                },
+                zoom: {
+                    pan: {
+                        enabled: true,
+                        mode: 'x',
+                    },
+                    zoom: {
+                        wheel: {
+                            enabled: true,
+                        },
+                        drag: {
+                            enabled: true,
+                        },
+                        pinch: {
+                            enabled: true,
+                        },
+                        mode: 'x',
+                    }
                 }
-                // Removed zoom plugin for now
             }
         }
     });
