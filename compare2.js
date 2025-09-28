@@ -101,15 +101,7 @@ const seriesColors = {
         if (!isNaN(n)) return n;
       }
     }
-    // fallback: scan all cells for first numeric
-    for (const k in row) {
-      if (!row.hasOwnProperty(k)) continue;
-      const raw = row[k];
-      if (typeof raw === 'number') return raw;
-      const cleaned = String(raw || '').replace(/[^0-9.\-]/g, '');
-      const n = parseFloat(cleaned);
-      if (!isNaN(n)) return n;
-    }
+    
     return null;
   }
 
