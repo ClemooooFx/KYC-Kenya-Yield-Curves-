@@ -1,5 +1,38 @@
 // compare.js
 // Self-contained: loads Excel files, computes monthly averages, aligns series, and hooks up UI controls in compare.html
+const seriesColors = {
+    // --- Government Securities: T-Bills & T-Bonds ---
+    // Short Term Bills (using blues/teals)
+    "91 Day Bill": '#4e79a7',      // Blue (COLORS[0])
+    "182 Day Bill": '#76b7b2',     // Teal (COLORS[3])
+    "364 Day Bill": '#7bdff2',     // Light Blue (COLORS[10])
+
+    // Long Term Bonds (using greens/purples/pinks)
+    "2 Year Bond": '#59a14f',      // Green (COLORS[4])
+    "3 Year Bond": '#af7aa1',      // Purple (COLORS[6])
+    "5 Year Bond": '#ff9da7',      // Pink (COLORS[7])
+    "10 Year Bond": '#9c755f',     // Brown (COLORS[8])
+    "15 Year Bond": '#bab0ac',     // Gray (COLORS[9])
+    "20 Year Bond": '#c2b6ff',     // Lavender (COLORS[11])
+    "25 Year Bond": '#4e79a7',     // Repeats Blue (COLORS[0])
+
+    // --- Central Bank Rates Group (Core Rates) ---
+    "Central Bank Rate": '#e15759', // Red (COLORS[2]) - Highlighted as key
+    "Repo Rate": '#f28e2b',         // Orange (COLORS[1])
+    "Reverse Repo Rate": '#edc948', // Yellow (COLORS[5])
+    "KESONIA": '#59a14f',           // Green (COLORS[4])
+
+    // --- CBWAR Group (Commercial Banks Weighted Average Rates) ---
+    // Distinct set of colors, ensuring Lending/Overdraft are noticeable
+    "Lending": '#e15759',           // Red (COLORS[2]) - Highlighted
+    "Overdraft": '#f28e2b',         // Orange (COLORS[1])
+    "Deposit": '#76b7b2',           // Teal (COLORS[3])
+    "Savings": '#af7aa1',           // Purple (COLORS[6])
+
+    // --- Inflation Group ---
+    "12-Month Inflation": '#9c755f', // Brown (COLORS[8])
+    "Annual Average Inflation": '#bab0ac' // Gray (COLORS[9])
+};
 
 (function () {
   // Register zoom plugin (safe to call multiple times)
@@ -434,24 +467,21 @@
       }
     });
 
-    // Assign colors to activeLabels in deterministic order
-    // We'll map label -> color
-    const labelToColor = {};
-    let colorIndex = 0;
-    activeLabels.forEach(x => {
-      if (!labelToColor[x.label]) {
-        labelToColor[x.label] = COLORS[colorIndex % COLORS.length];
-        colorIndex++;
-      }
-    });
-    // ensure differential series get their own colors
-    activeDifferentials.forEach(d => {
-      const diffLabel = `${d.a} - ${d.b}`;
-      if (!labelToColor[diffLabel]) {
-        labelToColor[diffLabel] = COLORS[colorIndex % COLORS.length];
-        colorIndex++;
-      }
-    });
+    // Use the fixed seriesColors map.
+    const labelToColor = { ...seriesColors }; // Start with all fixed colors
+
+    // Ensure differential series (which are dynamic) get a unique color.
+    // We'll use the original COLORS array to assign a color if the label isn't fixed.
+    let colorIndex = Object.keys(seriesColors).length; // Start index after fixed colors
+    
+    activeDifferentials.forEach(d => {
+      const diffLabel = `${d.a} - ${d.b}`;
+      if (!labelToColor[diffLabel]) {
+        // Assign next available color from the global COLORS array
+        labelToColor[diffLabel] = COLORS[colorIndex % COLORS.length];
+        colorIndex++;
+      }
+    });
 
     // Now build datasets for visible series
     activeLabels.forEach(x => {
