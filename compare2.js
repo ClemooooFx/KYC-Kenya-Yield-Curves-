@@ -19,7 +19,7 @@ const seriesColors = {
     "Central Bank Rate": '#dc2626', // Red
     "Repo Rate": '#991b1b',         // Dark Red/Maroon
     "Reverse Repo Rate": '#7f1d1d', // Burgundy
-    "KESONIA": '#b91c1c',           // Crimson
+    "KESONIA": 'rgba(185, 28, 28, 0.8)', // Crimson with 80% opacity
     
     // --- CBWAR Group (Green Family) ---
     "Savings": '#86efac',           // Light Green
