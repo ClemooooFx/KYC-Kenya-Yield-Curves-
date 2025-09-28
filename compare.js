@@ -141,7 +141,11 @@ function addInflationSeries(type) {
         };
     }
     
+    if (inflationData.labels) {
     addDatasetToChart(dataset, inflationData.labels);
+    } else {
+    console.error('Inflation data missing labels:', inflationData);
+    }
 }
 
 function addCBWARSeries(rateType) {
