@@ -189,27 +189,32 @@
 
   // Interbank + KESONIA combined monthly average
   function processKesonia(interbankRows, kesoniaRows) {
-    const all = [...(interbankRows || []), ...(kesoniaRows || [])];
-    const m = new Map();
-    all.forEach(r => {
-      const dt = parseDateFlexible(r['Date'] || r['DATE']);
-      const val = getNumeric(r, ['Rate','KESONIA','Overnight']);
-      if (!dt || val === null) return;
-      const mk = toMonthKey(dt);
-      if (!m.has(mk)) m.set(mk, []);
-      m.get(mk).push(val);
-    });
-    const mm = new Map();
-for (const [k, arr] of m.entries()) {
-  if (arr.length > 0) {
-    mm.set(k, arr.reduce((a, b) => a + b, 0) / arr.length);
-  } else {
-    mm.set(k, null); // explicitly mark missing month
-  }
-}
-return new Map([['KESONIA', mm]]);
+  const all = [...(interbankRows || []), ...(kesoniaRows || [])];
+  const m = new Map();
 
+  all.forEach(r => {
+    // Skip completely empty rows
+    if (!r || Object.values(r).every(v => v === null || v === '')) return;
+
+    const dt = parseDateFlexible(r['Date'] || r['DATE']);
+    const val = getNumeric(r, ['Rate', 'KESONIA', 'Overnight']);
+
+    // Skip if either date or value is invalid
+    if (!dt || val === null) return;
+
+    const mk = toMonthKey(dt);
+    if (!m.has(mk)) m.set(mk, []);
+    m.get(mk).push(val);
+  });
+
+  const mm = new Map();
+  for (const [k, arr] of m.entries()) {
+    mm.set(k, arr.length > 0 ? arr.reduce((a, b) => a + b, 0) / arr.length : null);
   }
+
+  return new Map([['KESONIA', mm]]);
+}
+
 
   // CBWAR: rows with Month (name), Year, and Deposit/Savings/Lending/Overdraft
   const monthNameMap = {
