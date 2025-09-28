@@ -528,9 +528,28 @@ const seriesColors = {
     }
     const ctx = ctxEl.getContext('2d');
 
+    // === NEW LOGIC START ===
+    const { minMonthKey, maxMonthKey } = findActiveRange(datasets, labels);
+    
+    let xScaleOptions = {};
+    if (minMonthKey && maxMonthKey) {
+        // Set the min and max labels for the x-axis scale
+        xScaleOptions.min = minMonthKey;
+        xScaleOptions.max = maxMonthKey;
+    } else {
+        // If no data is selected, ensure we revert to showing the full range
+        xScaleOptions.min = labels[0];
+        xScaleOptions.max = labels[labels.length - 1];
+    }
+    // === NEW LOGIC END ===
+
+
     if (compareChart) {
       compareChart.data.labels = labels;
       compareChart.data.datasets = datasets;
+        // Apply the new min/max to the existing chart instance
+      compareChart.options.scales.x.min = xScaleOptions.min;
+      compareChart.options.scales.x.max = xScaleOptions.max;
       compareChart.update();
     } else {
       compareChart = new Chart(ctx, {
@@ -542,7 +561,12 @@ const seriesColors = {
           interaction: { mode: 'index', intersect: false },
           spanGaps: false,
           scales: {
-            x: { title: { display: true, text: 'Date (MM/YYYY)' } },
+            x: { 
+              title: { display: true, text: 'Date (MM/YYYY)' },
+              // Use the calculated min/max here for the initial draw
+              min: xScaleOptions.min, 
+              max: xScaleOptions.max 
+            },
             y: { title: { display: true, text: 'Rate (%)' } }
           },
           plugins: {
@@ -741,3 +765,38 @@ const seriesColors = {
   document.addEventListener('DOMContentLoaded', init);
 
 })();
+
+function findActiveRange(datasets, allMonths) {
+    let firstActiveIndex = allMonths.length;
+    let lastActiveIndex = -1;
+
+    datasets.forEach(dataset => {
+        // Find the index of the first non-null data point
+        let first = dataset.data.findIndex(v => v !== null && v !== undefined);
+        // Find the index of the last non-null data point
+        let last = dataset.data.slice().reverse().findIndex(v => v !== null && v !== undefined);
+        
+        // If the dataset has any data points (first !== -1)
+        if (first !== -1) {
+            // Update the global start index if this dataset starts earlier
+            firstActiveIndex = Math.min(firstActiveIndex, first);
+            
+            // Calculate the actual index of the last non-null point
+            let lastIndex = (last !== -1) ? (allMonths.length - 1 - last) : -1;
+
+            // Update the global end index if this dataset ends later
+            lastActiveIndex = Math.max(lastActiveIndex, lastIndex);
+        }
+    });
+
+    // Return the month keys for the calculated range
+    if (lastActiveIndex >= firstActiveIndex) {
+        return {
+            minMonthKey: allMonths[firstActiveIndex],
+            maxMonthKey: allMonths[lastActiveIndex]
+        };
+    }
+
+    // If no active data points found, return null
+    return { minMonthKey: null, maxMonthKey: null };
+}
