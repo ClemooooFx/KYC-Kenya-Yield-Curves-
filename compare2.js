@@ -521,7 +521,7 @@
           spanGaps: false,
           scales: {
             x: { title: { display: true, text: 'Date (MM/YYYY)' } },
-            y: { title: { display: true, text: 'Rate / Differential' } }
+            y: { title: { display: true, text: 'Rate (%)' } }
           },
           plugins: {
             tooltip: {
