@@ -1,29 +1,42 @@
-// compare.js (Corrected initialization)
+// compare.js - Updated with CBWAR support
 Chart.register(window.ChartZoom);
 let compareChart = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('Compare page loaded');
     
-    if (window.InflationDataLoader) {
-        console.log('Starting data load...');
-        // CRUCIAL: AWAIT the data load here before doing anything else.
-        await window.InflationDataLoader.loadData(); 
-        console.log('Inflation data loaded (status check):', window.InflationDataLoader.isLoaded());
-    } else {
-        console.error('InflationDataLoader not found. Check script loading order.');
+    // Load all available data sources
+    const loaders = [
+        { loader: window.InflationDataLoader, name: 'Inflation' },
+        { loader: window.CBWARDataLoader, name: 'CBWAR' }
+    ];
+    
+    for (const { loader, name } of loaders) {
+        if (loader) {
+            try {
+                await loader.loadData();
+                console.log(`${name} data loaded successfully`);
+            } catch (error) {
+                console.error(`Failed to load ${name} data:`, error);
+            }
+        } else {
+            console.log(`${name} loader not found`);
+        }
     }
     
-    // Initialize chart and setup listeners *after* data load attempt
     initializeCompareChart();
-    setupCheckboxListeners();
+    setupAllCheckboxListeners();
     setupControlButtons();
 });
 
-function setupCheckboxListeners() {
-    console.log('Setting up checkbox listeners');
+function setupAllCheckboxListeners() {
+    setupInflationCheckboxes();
+    setupCBWARCheckboxes();
+}
+
+function setupInflationCheckboxes() {
+    console.log('Setting up inflation checkbox listeners');
     
-    // CPI YoY checkbox
     const cpiYoyCheckbox = document.getElementById('cpi-yoy');
     if (cpiYoyCheckbox) {
         cpiYoyCheckbox.addEventListener('change', (e) => {
@@ -31,14 +44,11 @@ function setupCheckboxListeners() {
             if (e.target.checked) {
                 addInflationSeries('monthly');
             } else {
-                removeInflationSeries('12-Month Inflation');
+                removeSeriesByLabel('12-Month Inflation');
             }
         });
-    } else {
-        console.error('CPI YoY checkbox not found');
     }
     
-    // CPI Annual Average checkbox  
     const cpiAnnualCheckbox = document.getElementById('cpi-annual');
     if (cpiAnnualCheckbox) {
         cpiAnnualCheckbox.addEventListener('change', (e) => {
@@ -46,16 +56,35 @@ function setupCheckboxListeners() {
             if (e.target.checked) {
                 addInflationSeries('annual');
             } else {
-                removeInflationSeries('Annual Average Inflation');
+                removeSeriesByLabel('Annual Average Inflation');
             }
         });
-    } else {
-        console.error('CPI Annual checkbox not found');
     }
 }
 
+function setupCBWARCheckboxes() {
+    console.log('Setting up CBWAR checkbox listeners');
+    
+    const rateTypes = ['lending', 'overdraft', 'savings', 'deposit'];
+    
+    rateTypes.forEach(rateType => {
+        const checkbox = document.getElementById(rateType);
+        if (checkbox) {
+            checkbox.addEventListener('change', (e) => {
+                console.log(`${rateType} checkbox changed:`, e.target.checked);
+                if (e.target.checked) {
+                    addCBWARSeries(rateType);
+                } else {
+                    removeSeriesByLabel(rateType.charAt(0).toUpperCase() + rateType.slice(1));
+                }
+            });
+        } else {
+            console.error(`${rateType} checkbox not found`);
+        }
+    });
+}
+
 function setupControlButtons() {
-    // Clear All button
     const clearBtn = document.getElementById('clear-all');
     if (clearBtn) {
         clearBtn.addEventListener('click', () => {
@@ -63,19 +92,14 @@ function setupControlButtons() {
             compareChart.data.datasets = [];
             compareChart.data.labels = [];
             compareChart.update();
-            
-            // Uncheck all checkboxes
             document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
         });
     }
     
-    // Reset Zoom button (disabled for now)
     const resetZoomBtn = document.getElementById('reset-zoom');
     if (resetZoomBtn) {
         resetZoomBtn.addEventListener('click', () => {
-            // Check if the chart object exists before attempting to reset
             if (compareChart) {
-                // This is the Chart.js Zoom Plugin method you need!
                 compareChart.resetZoom();
             }
         });
@@ -85,19 +109,12 @@ function setupControlButtons() {
 function addInflationSeries(type) {
     console.log('Adding inflation series:', type);
     
-    if (!window.InflationDataLoader) {
-        console.error('InflationDataLoader not available');
+    if (!window.InflationDataLoader || !window.InflationDataLoader.getData()) {
+        console.error('Inflation data not available');
         return;
     }
     
     const inflationData = window.InflationDataLoader.getData();
-    // This is the line that's failing. It means globalInflationData is NULL.
-    if (!inflationData) { 
-        console.error('No inflation data available. Data loading must have failed or not completed.');
-        return;
-    }
-    
-    console.log('Inflation data available:', inflationData);
     
     let dataset;
     if (type === 'monthly') {
@@ -116,7 +133,7 @@ function addInflationSeries(type) {
             label: 'Annual Average Inflation',
             data: inflationData.annualInflation,
             borderColor: '#f28e2c',
-            backgroundColor: '#f28e2c', 
+            backgroundColor: '#f28e2c',
             type: 'line',
             tension: 0.4,
             pointRadius: 0,
@@ -124,10 +141,49 @@ function addInflationSeries(type) {
         };
     }
     
-    // Set labels if chart is empty
+    addDatasetToChart(dataset, inflationData.labels);
+}
+
+function addCBWARSeries(rateType) {
+    console.log('Adding CBWAR series:', rateType);
+    
+    if (!window.CBWARDataLoader || !window.CBWARDataLoader.getData()) {
+        console.error('CBWAR data not available');
+        return;
+    }
+    
+    const rateData = window.CBWARDataLoader.getRateData(rateType);
+    if (!rateData) {
+        console.error(`No data found for rate type: ${rateType}`);
+        return;
+    }
+    
+    const dataset = {
+        label: rateType.charAt(0).toUpperCase() + rateType.slice(1),
+        data: rateData.data,
+        borderColor: rateData.color,
+        backgroundColor: rateData.color,
+        type: 'line',
+        tension: 0.4,
+        pointRadius: 0,
+        fill: false
+    };
+    
+    addDatasetToChart(dataset, rateData.labels);
+}
+
+function addDatasetToChart(dataset, dataLabels) {
+    // Set labels if chart is empty, or merge if different
     if (compareChart.data.labels.length === 0) {
-        compareChart.data.labels = inflationData.labels;
-        console.log('Set chart labels:', inflationData.labels.length, 'dates');
+        compareChart.data.labels = dataLabels;
+        console.log('Set chart labels:', dataLabels.length, 'dates');
+    } else if (JSON.stringify(compareChart.data.labels) !== JSON.stringify(dataLabels)) {
+        // Handle different date ranges - for now, we'll use the longer range
+        if (dataLabels.length > compareChart.data.labels.length) {
+            console.log('Updating chart labels to longer range');
+            compareChart.data.labels = dataLabels;
+            // Note: This might require re-aligning existing datasets
+        }
     }
     
     // Check if dataset already exists
@@ -143,7 +199,7 @@ function addInflationSeries(type) {
     console.log('Chart updated, total datasets:', compareChart.data.datasets.length);
 }
 
-function removeInflationSeries(label) {
+function removeSeriesByLabel(label) {
     console.log('Removing series:', label);
     
     const initialLength = compareChart.data.datasets.length;
@@ -164,7 +220,6 @@ function initializeCompareChart() {
         return;
     }
     
-    console.log('Canvas found, creating chart context');
     const ctx = canvas.getContext('2d');
     
     compareChart = new Chart(ctx, {
@@ -210,21 +265,19 @@ function initializeCompareChart() {
                         }
                     }
                 },
+                legend: {
+                    display: true,
+                    position: 'top'
+                },
                 zoom: {
                     pan: {
                         enabled: true,
                         mode: 'x',
                     },
                     zoom: {
-                        wheel: {
-                            enabled: true,
-                        },
-                        drag: {
-                            enabled: true,
-                        },
-                        pinch: {
-                            enabled: true,
-                        },
+                        wheel: { enabled: true },
+                        drag: { enabled: true },
+                        pinch: { enabled: true },
                         mode: 'x',
                     }
                 }
