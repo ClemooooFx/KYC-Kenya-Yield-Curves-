@@ -155,16 +155,85 @@ function renderInflationChart(data) {
             maintainAspectRatio: false,
             // ... (rest of your chart options: interaction, scales, plugins)
             plugins: {
-                tooltip: { /* ... your tooltip callbacks ... */ },
-                legend: { /* ... your legend options ... */ },
-                zoom: { /* ... your zoom options ... */ }
-            },
-            scales: {
-                x: { max: data.labels.length },
-                y: { title: { display: true, text: 'Inflation Rate (%)' }, beginAtZero: true }
-            }
-        }
-    });
+
+                tooltip: {
+
+                    callbacks: {
+
+                        label: function(context) {
+
+                            let label = context.dataset.label || '';
+
+                            if (label) {
+
+                                label += ': ';
+
+                            }
+
+                            if (context.parsed.y !== null) {
+
+                                label += `${context.parsed.y.toFixed(2)}%`;
+
+                            }
+
+                            return label;
+
+                        }
+
+                    }
+
+                },
+
+                legend: {
+
+                    display: true,
+
+                    position: 'top'
+
+                },
+
+                zoom: {
+
+                    pan: {
+
+                        enabled: true,
+
+                        mode: 'x',
+
+                    },
+
+                    zoom: {
+
+                        wheel: {
+
+                            enabled: true,
+
+                        },
+
+                        drag: {
+
+                            enabled: true,
+
+                        },
+
+                        pinch: {
+
+                            enabled: true,
+
+                        },
+
+                        mode: 'x',
+
+                    }
+
+                }
+
+            }
+
+        }
+
+    });
+
 }
 
 /**
