@@ -104,7 +104,7 @@ function addInflationSeries(type) {
             backgroundColor: '#4e79a7',
             type: 'line',
             tension: 0.4,
-            pointRadius: 2,
+            pointRadius: 0,
             fill: false
         };
     } else if (type === 'annual') {
@@ -115,7 +115,7 @@ function addInflationSeries(type) {
             backgroundColor: '#f28e2c', 
             type: 'line',
             tension: 0.4,
-            pointRadius: 2,
+            pointRadius: 0,
             fill: false
         };
     }
