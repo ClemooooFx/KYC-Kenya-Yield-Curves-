@@ -764,8 +764,6 @@ const seriesColors = {
   // Start when DOM ready
   document.addEventListener('DOMContentLoaded', init);
 
-})();
-
 function findActiveRange(datasets, allMonths) {
     let firstActiveIndex = allMonths.length;
     let lastActiveIndex = -1;
@@ -800,3 +798,5 @@ function findActiveRange(datasets, allMonths) {
     // If no active data points found, return null
     return { minMonthKey: null, maxMonthKey: null };
 }
+
+})();
