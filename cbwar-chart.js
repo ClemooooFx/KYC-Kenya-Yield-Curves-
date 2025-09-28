@@ -1,12 +1,11 @@
-// cbwar-chart.js
+// cbwar-data.js - Commercial Banks Weighted Average Rates data loader
 
+// Global Variables
 Chart.register(window.ChartZoom);
 let charts = {};
+let globalCBWARData = null;
 
-
-document.addEventListener('DOMContentLoaded', () => {
-    loadAndDisplay('data/Commercial Banks Weighted Average Rates.xlsx', 'cbwar-chart', 'cbwar-table');
-});
+const CBWAR_FILE_PATH = 'data/Commercial Banks Weighted Average Rates.xlsx';
 
 // Map of month names to their numerical index (1-based)
 const monthMap = {
@@ -14,16 +13,18 @@ const monthMap = {
     'July': 7, 'August': 8, 'September': 9, 'October': 10, 'November': 11, 'December': 12
 };
 
-// Data properties to be plotted on the chart
+// Data properties and their colors
 const chartProperties = ['Deposit', 'Savings', 'Lending', 'Overdraft'];
-// Colors for each line in the chart
 const colors = ['#4A90E2', '#50E3C2', '#F5A623', '#D0021B'];
 
-function loadAndDisplay(filePath, chartId, tableId) {
-    fetch(filePath)
+/**
+ * Loads the Excel file and returns JSON data
+ */
+function loadExcelFile(filePath) {
+    return fetch(filePath)
         .then(res => {
             if (!res.ok) {
-                throw new Error(`HTTP error! status: ${res.status}`);
+                throw new Error(`HTTP error! Status: ${res.status} for file: ${filePath}`);
             }
             return res.arrayBuffer();
         })
@@ -31,18 +32,18 @@ function loadAndDisplay(filePath, chartId, tableId) {
             const workbook = XLSX.read(data, { type: 'array' });
             const sheetName = workbook.SheetNames[0];
             const sheet = workbook.Sheets[sheetName];
-            const json = XLSX.utils.sheet_to_json(sheet);
-            
-            processCbwarData(json, chartId, tableId);
-        })
-        .catch(err => {
-            console.error('Error loading or processing file:', err);
+            return XLSX.utils.sheet_to_json(sheet);
         });
 }
 
-function processCbwarData(data, chartId, tableId) {
-    // Sort data chronologically based on Year and Month
-    const sortedData = data.sort((a, b) => {
+/**
+ * Processes the raw CBWAR data into a structured format
+ */
+function processData(jsonData) {
+    console.log('Processing CBWAR data:', jsonData.length, 'records');
+    
+    // Sort data chronologically
+    const sortedData = jsonData.sort((a, b) => {
         const yearA = parseInt(a.Year);
         const yearB = parseInt(b.Year);
         const monthA = monthMap[a.Month.trim()];
@@ -54,16 +55,59 @@ function processCbwarData(data, chartId, tableId) {
         return monthA - monthB;
     });
 
+    // Create labels in mm/yyyy format
     const labels = sortedData.map(d => {
         const monthIndex = monthMap[d.Month.trim()];
         const formattedMonth = String(monthIndex).padStart(2, '0');
         return `${formattedMonth}/${d.Year}`;
     });
     
+    // Extract data for each property
+    const processedData = {};
+    chartProperties.forEach(prop => {
+        processedData[prop.toLowerCase()] = sortedData.map(d => parseFloat(d[prop]));
+    });
+
+    return {
+        labels: labels,
+        deposit: processedData.deposit,
+        savings: processedData.savings,
+        lending: processedData.lending,
+        overdraft: processedData.overdraft,
+        rawData: sortedData
+    };
+}
+
+/**
+ * Fetches and processes CBWAR data
+ */
+async function fetchAndProcessData() {
+    try {
+        const rawJsonData = await loadExcelFile(CBWAR_FILE_PATH);
+        return processData(rawJsonData);
+    } catch (error) {
+        console.error("Error during CBWAR fetch or processing:", error);
+        throw error;
+    }
+}
+
+/**
+ * Renders the dedicated CBWAR chart (for individual page)
+ */
+function renderCBWARChart(data) {
+    const chartId = 'cbwar-chart';
+    const canvas = document.getElementById(chartId);
+    if (!canvas) return;
+    
+    const ctx = canvas.getContext("2d");
+    if (charts[chartId]) {
+        charts[chartId].destroy();
+    }
+
     const datasets = chartProperties.map((prop, index) => {
         return {
             label: prop,
-            data: sortedData.map(d => parseFloat(d[prop])),
+            data: data[prop.toLowerCase()],
             borderColor: colors[index % colors.length],
             backgroundColor: colors[index % colors.length],
             fill: false,
@@ -73,29 +117,11 @@ function processCbwarData(data, chartId, tableId) {
         };
     });
 
-    renderMultiLineChart(chartId, labels, datasets);
-    // Optional: You can call a function here to render a table with the data
-    // renderTable(sortedData, tableId);
-}
-
-function renderMultiLineChart(chartId, labels, datasets) {
-    const ctx = document.getElementById(chartId).getContext("2d");
-    if (charts[chartId]) {
-        charts[chartId].destroy();
-    }
-
-    const smoothDatasets = datasets.map(dataset => {
-        return {
-            ...dataset,
-            tension: 0.4
-        };
-    });
-
     charts[chartId] = new Chart(ctx, {
         type: "line",
         data: {
-            labels: labels,
-            datasets: smoothDatasets,
+            labels: data.labels,
+            datasets: datasets,
         },
         options: {
             responsive: true,
@@ -107,7 +133,7 @@ function renderMultiLineChart(chartId, labels, datasets) {
             scales: {
                 x: {
                     title: {
-                        display: false,
+                        display: true,
                         text: 'Date (Month/Year)'
                     }
                 },
@@ -136,24 +162,69 @@ function renderMultiLineChart(chartId, labels, datasets) {
                 zoom: {
                     pan: {
                         enabled: true,
-                        mode: 'x', // Enable panning along the x-axis
+                        mode: 'x',
                     },
                     zoom: {
-                        wheel: {
-                            enabled: true, // Enable zoom via mouse wheel
-                        },
-                        drag: { // This is the new part for fixing the drag
-                            enabled: true, // Enable dragging to pan
-                        },
-                        pinch: {
-                            enabled: true // Enable zoom via pinch gesture
-                        },
-                        mode: 'x', // Zoom along the x-axis
-                        // You can adjust the zoom factor here if needed
-                        // speed: 0.1,
+                        wheel: { enabled: true },
+                        drag: { enabled: true },
+                        pinch: { enabled: true },
+                        mode: 'x',
                     }
                 }
             }
         }
     });
+    
+    console.log('CBWAR chart rendered successfully');
 }
+
+/**
+ * Main public function to load CBWAR data
+ */
+async function loadCBWARData() {
+    if (globalCBWARData) {
+        console.log("CBWAR data already loaded from global scope.");
+    } else {
+        try {
+            const data = await fetchAndProcessData();
+            globalCBWARData = data;
+            console.log("CBWAR data successfully fetched and stored.");
+        } catch (error) {
+            console.error("Critical error during CBWAR data load:", error);
+            throw error;
+        }
+    }
+    
+    // Render chart only if on dedicated CBWAR page
+    const cbwarChartCanvas = document.getElementById('cbwar-chart');
+    if (cbwarChartCanvas) {
+        console.log("Rendering chart for dedicated CBWAR page.");
+        renderCBWARChart(globalCBWARData);
+    }
+}
+
+// --- Public Interface ---
+window.CBWARDataLoader = {
+    getData: () => globalCBWARData,
+    isLoaded: () => globalCBWARData !== null,
+    loadData: loadCBWARData,
+    renderChart: renderCBWARChart,
+    
+    // Helper function to get specific rate data with color
+    getRateData: (rateType) => {
+        if (!globalCBWARData) return null;
+        
+        const colorMap = {
+            'deposit': '#4A90E2',
+            'savings': '#50E3C2', 
+            'lending': '#F5A623',
+            'overdraft': '#D0021B'
+        };
+        
+        return {
+            labels: globalCBWARData.labels,
+            data: globalCBWARData[rateType.toLowerCase()],
+            color: colorMap[rateType.toLowerCase()]
+        };
+    }
+};
