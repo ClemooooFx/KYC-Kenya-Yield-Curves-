@@ -70,11 +70,14 @@ function setupControlButtons() {
     }
     
     // Reset Zoom button (disabled for now)
-    const resetBtn = document.getElementById('reset-zoom');
-    if (resetBtn) {
-        resetBtn.addEventListener('click', () => {
-            console.log('Reset zoom clicked - zoom not available');
-            // compareChart.resetZoom(); // Disabled until zoom works
+    const resetZoomBtn = document.getElementById('reset-zoom');
+    if (resetZoomBtn) {
+        resetZoomBtn.addEventListener('click', () => {
+            // Check if the chart object exists before attempting to reset
+            if (compareChart) {
+                // This is the Chart.js Zoom Plugin method you need!
+                compareChart.resetZoom();
+            }
         });
     }
 }
