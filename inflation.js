@@ -153,87 +153,63 @@ function renderInflationChart(data) {
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            // ... (rest of your chart options: interaction, scales, plugins)
+            interaction: {
+                mode: 'index',
+                intersect: false
+            },
+            scales: {
+                y: {
+                    title: {
+                        display: true,
+                        text: 'Rate (%)'
+                    },
+                    beginAtZero: true
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Date (Month/Year)'
+                    }
+                }
+            },
             plugins: {
-
-                tooltip: {
-
-                    callbacks: {
-
-                        label: function(context) {
-
-                            let label = context.dataset.label || '';
-
-                            if (label) {
-
-                                label += ': ';
-
-                            }
-
-                            if (context.parsed.y !== null) {
-
-                                label += `${context.parsed.y.toFixed(2)}%`;
-
-                            }
-
-                            return label;
-
-                        }
-
-                    }
-
-                },
-
-                legend: {
-
-                    display: true,
-
-                    position: 'top'
-
-                },
-
-                zoom: {
-
-                    pan: {
-
-                        enabled: true,
-
-                        mode: 'x',
-
-                    },
-
-                    zoom: {
-
-                        wheel: {
-
-                            enabled: true,
-
-                        },
-
-                        drag: {
-
-                            enabled: true,
-
-                        },
-
-                        pinch: {
-
-                            enabled: true,
-
-                        },
-
-                        mode: 'x',
-
-                    }
-
-                }
-
-            }
-
-        }
-
-    });
-
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            if (context.parsed.y !== null) {
+                                label += `${context.parsed.y.toFixed(2)}%`;
+                            }
+                            return label;
+                        }
+                    }
+                },
+                zoom: {
+                    pan: {
+                        enabled: true,
+                        mode: 'x',
+                    },
+                    zoom: {
+                        wheel: {
+                            enabled: true,
+                        },
+                        drag: {
+                            enabled: true,
+                        },
+                        pinch: {
+                            enabled: true,
+                        },
+                        mode: 'x',
+                    }
+                }
+            }
+        }
+    });
+    
+    console.log('Compare chart initialized successfully');
 }
 
 /**
