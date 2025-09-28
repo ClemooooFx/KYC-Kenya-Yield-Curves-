@@ -200,8 +200,15 @@
       m.get(mk).push(val);
     });
     const mm = new Map();
-    for (const [k, arr] of m.entries()) mm.set(k, arr.reduce((a,b)=>a+b,0)/arr.length);
-    return new Map([['KESONIA', mm]]);
+for (const [k, arr] of m.entries()) {
+  if (arr.length > 0) {
+    mm.set(k, arr.reduce((a, b) => a + b, 0) / arr.length);
+  } else {
+    mm.set(k, null); // explicitly mark missing month
+  }
+}
+return new Map([['KESONIA', mm]]);
+
   }
 
   // CBWAR: rows with Month (name), Year, and Deposit/Savings/Lending/Overdraft
