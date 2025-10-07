@@ -66,6 +66,19 @@
         <canvas id="t-bonds-chart"></canvas>
         <canvas id="t-bonds-navigator"></canvas>
     </div>
+        <div id="stock-container">
+    <h2>Live NSE Stock Data</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Company</th>
+                <th>Price</th>
+                <th>Change</th>
+            </tr>
+        </thead>
+        <tbody id="stock-table-body"></tbody>
+    </table>
+</div>
     </div>
 
 
@@ -80,5 +93,6 @@
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
     
     <script src="script.js"></script>
+    <script src="stock-fetcher.js"></script>
 </body>
 </html>
