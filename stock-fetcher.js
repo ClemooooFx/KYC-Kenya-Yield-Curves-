@@ -1,4 +1,4 @@
-const API_BASE_URL = 'https://stock-api-production.up.railway.app';
+const API_BASE_URL = 'web-production-7130.up.railway.app';
 
 async function fetchNSEData() {
     try {
