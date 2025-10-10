@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>NSE Live Data Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #f7f9fb;
+    color: #333;
+    margin: 0;
+    padding: 20px;
+  }
+
+  h2 {
+    text-align: center;
+    margin-bottom: 10px;
+  }
+
+  .section {
+    margin-bottom: 40px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  }
+
+  th, td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+  }
+
+  th {
+    background: #f0f2f5;
+  }
+
+  tr:hover {
+    background: #f9fafb;
+  }
+
+  #message {
+    text-align: center;
+    color: #777;
+    margin-top: 10px;
+  }
+
+  canvas {
+    background: #fff;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  }
+</style>
+</head>
+<body>
+
+<h2>📊 Nairobi Securities Exchange (NSE) Dashboard</h2>
+
+<div class="section">
+  <h3>Top Gainers</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Ticker</th>
+        <th>Price (KES)</th>
+        <th>Change (%)</th>
+      </tr>
+    </thead>
+    <tbody id="top-gainers-body"></tbody>
+  </table>
+</div>
+
+<div class="section">
+  <h3>Bottom Losers</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Ticker</th>
+        <th>Price (KES)</th>
+        <th>Change (%)</th>
+      </tr>
+    </thead>
+    <tbody id="bottom-losers-body"></tbody>
+  </table>
+</div>
+
+<div class="section">
+  <h3>Listed Companies</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Ticker</th>
+        <th>Price (KES)</th>
+        <th>Change</th>
+        <th>Volume</th>
+      </tr>
+    </thead>
+    <tbody id="listed-companies-body"></tbody>
+  </table>
+</div>
+
+<div class="section">
+  <h3>NSE Index Trend</h3>
+  <canvas id="indexChart" height="100"></canvas>
+</div>
+
+<p id="message"></p>
+
+<script>
+const API_BASE_URL = 'https://web-production-7130.up.railway.app';
+
+async function fetchData(endpoint) {
+  try {
+    const response = await fetch(`${API_BASE_URL}${endpoint}`);
+    return await response.json();
+  } catch (error) {
+    console.error(`Error fetching ${endpoint}:`, error);
+    return { success: false, data: [] };
+  }
+}
+
+function populateTable(tbodyId, data, mapper) {
+  const tbody = document.getElementById(tbodyId);
+  tbody.innerHTML = '';
+  if (!data || data.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;">No data available</td></tr>`;
+    return;
+  }
+
+  data.forEach(item => {
+    const row = document.createElement('tr');
+    row.innerHTML = mapper(item);
+    tbody.appendChild(row);
+  });
+}
+
+async function renderDashboard() {
+  const message = document.getElementById('message');
+  message.textContent = 'Loading data...';
+
+  const [gainers, losers, listed, indexData] = await Promise.all([
+    fetchData('/api/nse/top_gainers'),
+    fetchData('/api/nse/bottom_losers'),
+    fetchData('/api/nse/listed'),
+    fetchData('/api/nse/index_price')
+  ]);
+
+  message.textContent = '';
+
+  // Top Gainers
+  if (gainers.success) {
+    populateTable('top-gainers-body', gainers.data, (item) => `
+      <td>${item["Top Gainers (21)"]}</td>
+      <td>${item["Top Gainers (21).1"]}</td>
+      <td>${item["Top Gainers (21).2"]}</td>
+    `);
+  }
+
+  // Bottom Losers
+  if (losers.success) {
+    populateTable('bottom-losers-body', losers.data, (item) => `
+      <td>${item["Bottom Losers (21)"]}</td>
+      <td>${item["Bottom Losers (21).1"]}</td>
+      <td>${item["Bottom Losers (21).2"]}</td>
+    `);
+  }
+
+  // Listed Companies
+  if (listed.success) {
+    populateTable('listed-companies-body', listed.data, (item) => `
+      <td>${item.Name}</td>
+      <td>${item.Ticker}</td>
+      <td>${item.Price}</td>
+      <td>${item.Change ?? '-'}</td>
+      <td>${item.Volume ?? '-'}</td>
+    `);
+  }
+
+  // Index Chart
+  if (indexData.success) {
+    renderIndexChart(indexData.data);
+  }
+}
+
+function renderIndexChart(data) {
+  if (!data || data.length === 0) return;
+
+  const ctx = document.getElementById('indexChart').getContext('2d');
+  const labels = data.map(d => d.Date || d.date);
+  const prices = data.map(d => d.Price || d.price);
+
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        label: 'NSE All Share Index',
+        data: prices,
+        fill: false,
+        borderColor: '#007bff',
+        borderWidth: 2,
+        tension: 0.1
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        x: {
+          ticks: { display: false }
+        },
+        y: {
+          title: {
+            display: true,
+            text: 'Closing Price (KES)'
+          }
+        }
+      }
+    }
+  });
+}
+
+document.addEventListener('DOMContentLoaded', renderDashboard);
+</script>
+
+</body>
+</html>
