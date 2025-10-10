@@ -66,19 +66,31 @@
         <canvas id="t-bonds-chart"></canvas>
         <canvas id="t-bonds-navigator"></canvas>
     </div>
-        <div id="stock-container">
-    <h2>Live NSE Stock Data</h2>
-    <table>
-        <thead>
-            <tr>
-                <th>Company</th>
-                <th>Price</th>
-                <th>Change</th>
-            </tr>
-        </thead>
-        <tbody id="stock-table-body"></tbody>
-    </table>
-</div>
+        <section id="stock-container" class="p-4 bg-white rounded-2xl shadow-md">
+    <div class="flex items-center justify-between mb-3">
+        <h2 class="text-xl font-semibold text-gray-800">Live NSE Stock Data</h2>
+        <span id="last-updated" class="text-sm text-gray-500"></span>
+    </div>
+
+    <div class="overflow-x-auto">
+        <table class="min-w-full border border-gray-200 rounded-lg">
+            <thead class="bg-gray-100 text-gray-700">
+                <tr>
+                    <th class="px-4 py-2 text-left">Company</th>
+                    <th class="px-4 py-2 text-right">Price (KES)</th>
+                    <th class="px-4 py-2 text-right">Change (%)</th>
+                </tr>
+            </thead>
+            <tbody id="stock-table-body" class="divide-y divide-gray-200 text-gray-800">
+                <!-- Stock data will be injected here -->
+            </tbody>
+        </table>
+    </div>
+
+    <p id="message" class="mt-4 text-center text-sm text-gray-500 hidden">
+        Loading data...
+    </p>
+</section>
     </div>
 
 
