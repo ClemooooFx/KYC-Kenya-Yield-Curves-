@@ -487,3 +487,83 @@ button {
   border-radius: 8px;
   box-shadow: 0 2px 5px rgba(0,0,0,0.05);
 }
+
+.search-section {
+  margin: 30px auto;
+  padding: 20px;
+  max-width: 600px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.search-controls {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+  flex-wrap: wrap;
+}
+
+.search-controls input,
+.search-controls select {
+  flex: 1;
+  min-width: 150px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.search-controls button {
+  padding: 10px 20px;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.search-controls button:hover {
+  background: #0056b3;
+}
+
+.stock-info-container {
+  margin: 20px auto;
+  max-width: 900px;
+}
+
+.stock-info-section h3 {
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 24px;
+}
+
+.info-cards-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.info-card {
+  background: #f9fafb;
+  padding: 15px;
+  border-radius: 8px;
+  border-left: 4px solid #007bff;
+}
+
+.info-card h4 {
+  margin-top: 0;
+  color: #007bff;
+}
+
+.info-card p {
+  margin: 8px 0;
+  font-size: 14px;
+}
+
+#stock-chart-container {
+  max-width: 900px;
+  margin: 40px auto;
+  height: 400px;
+}
