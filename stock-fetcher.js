@@ -53,7 +53,20 @@ function renderIndexChart(data) {
       maintainAspectRatio: false,
       interaction: { mode: 'index', intersect: false },
       scales: {
-        x: { title: { display: true, text: 'Date' } },
+        x: { 
+        title: { display: true, text: 'Date' },
+        ticks: {
+          callback: function(value, index) {
+            const date = new Date(labels[value]);
+            // Show label only if it's the 1st of the month or first data point
+            if (date.getDate() === 1 || index === 0) {
+              return date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+            }
+            return '';
+          },
+          maxTicksLimit: 12 // Limits number of ticks shown
+        }
+      },
         y: { title: { display: true, text: 'Index Price (KES)' } }
       },
       plugins: {
