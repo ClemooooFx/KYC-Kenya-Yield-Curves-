@@ -121,12 +121,12 @@ async function renderDashboard() {
   }
 
   if (losers.success) {
-    populateTable('bottom-losers-body', losers.data, (item) => `
-      <td>${item["Bottom Losers (21)"]}</td>
-      <td>${item["Bottom Losers (21).1"]}</td>
-      <td>${item["Bottom Losers (21).2"]}</td>
-    `);
-  }
+  populateTable('bottom-losers-body', losers.data, (item) => `
+    <td>${item.Ticker || item.ticker || ''}</td>
+    <td>${item.Price || item.price || ''}</td>
+    <td>${item.Change || item.change || ''}</td>
+  `);
+}
 
   if (listed.success) {
     populateTable('listed-companies-body', listed.data, (item) => `
