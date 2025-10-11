@@ -468,3 +468,22 @@ button {
     transform: rotate(180deg);
 }
 
+#indexChart {
+  display: block;
+  width: 100%;
+  height: 400px;
+  max-height: 60vh;
+}
+
+.section {
+  margin-bottom: 40px;
+  position: relative;
+  width: 70%;
+}
+
+.section canvas {
+  background: #fff;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
