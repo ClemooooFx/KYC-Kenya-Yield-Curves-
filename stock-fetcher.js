@@ -107,6 +107,9 @@ async function renderDashboard() {
     fetchData('/api/nse/index_price')
   ]);
 
+  console.log('Gainers data:', gainers.data);
+  console.log('Losers data:', losers.data);
+
   message.textContent = '';
 
   if (gainers.success) {
