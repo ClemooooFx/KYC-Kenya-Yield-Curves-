@@ -122,9 +122,9 @@ async function renderDashboard() {
 
   if (losers.success) {
    populateTable('bottom-losers-body', losers.data, (item) => `
-    <td>${item.Ticker || item.ticker || ''}</td>
-    <td>${item.Price || item.price || ''}</td>
-    <td>${item.Change || item.change || ''}</td>
+      <td>${item["Bottom Losers (30)"]}</td>
+      <td>${item["Bottom Losers (30).1"]}</td>
+      <td>${item["Bottom Losers (30).2"]}</td>
   `);
 }
 
