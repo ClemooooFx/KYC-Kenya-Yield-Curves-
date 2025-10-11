@@ -121,7 +121,7 @@ async function renderDashboard() {
   }
 
   if (losers.success) {
-  populateTable('bottom-losers-body', losers.data, (item) => `
+   populateTable('bottom-losers-body', losers.data, (item) => `
     <td>${item.Ticker || item.ticker || ''}</td>
     <td>${item.Price || item.price || ''}</td>
     <td>${item.Change || item.change || ''}</td>
