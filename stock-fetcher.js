@@ -20,8 +20,8 @@ async function fetchData(endpoint) {
   try {
     const response = await fetch(`${API_BASE_URL}${endpoint}`);
     const text = await response.text();
-    // Replace NaN with null for valid JSON
-    const safeText = text.replace(/:\s*NaN\b/g, ':null');
+    // Replace all NaN with null for valid JSON (more aggressive matching)
+    const safeText = text.replace(/NaN/g, 'null');
     return JSON.parse(safeText);
   } catch (error) {
     console.error(`Error fetching ${endpoint}:`, error);
