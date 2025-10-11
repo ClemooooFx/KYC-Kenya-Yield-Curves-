@@ -38,6 +38,41 @@
             </li>
     </ul>
 </nav>
+
+<div class="search-section">
+  <h2>Search Stock by Ticker</h2>
+  <div class="search-controls">
+    <input 
+      type="text" 
+      id="stock-ticker" 
+      placeholder="Enter ticker symbol (e.g., EQUITY, SAFARICOM)" 
+      maxlength="20"
+    >
+    <select id="market-select">
+      <option value="">Select Market</option>
+      <option value="nse">Nairobi Securities Exchange (NSE)</option>
+      <option value="jse">Johannesburg Stock Exchange (JSE)</option>
+      <option value="ngx">Nigerian Stock Exchange (NGX)</option>
+      <option value="gse">Ghana Stock Exchange (GSE)</option>
+      <option value="use">Uganda Securities Exchange (USE)</option>
+      <option value="mse">Malawi Stock Exchange (MSE)</option>
+      <option value="bse">Botswana Stock Exchange (BSE)</option>
+      <option value="luse">Lusaka Securities Exchange (LUSE)</option>
+      <option value="zse">Zimbabwe Stock Exchange (ZSE)</option>
+      <option value="brvm">Bourse Régionale des Valeurs Mobilières (BRVM)</option>
+    </select>
+    <button onclick="searchStock()">Search</button>
+  </div>
+  <div id="search-status"></div>
+</div>
+
+<div id="stock-info-container" class="stock-info-container"></div>
+
+<div id="stock-chart-container" class="chart-container">
+  <h3 id="chart-title">Stock Price Chart</h3>
+  <canvas id="stock-price-chart" style="max-height: 400px;"></canvas>
+</div>
+    
  <h2>Nairobi Securities Exchange (NSE) Dashboard</h2>
 
 <div class="section">
