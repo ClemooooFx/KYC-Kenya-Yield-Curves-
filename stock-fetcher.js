@@ -20,7 +20,7 @@ async function fetchData(endpoint) {
   try {
     const response = await fetch(`${API_BASE_URL}${endpoint}`);
     const text = await response.text();
-    // Replace all NaN with null for valid JSON (more aggressive matching)
+    // Replace all NaN with null for valid JSON
     const safeText = text.replace(/NaN/g, 'null');
     return JSON.parse(safeText);
   } catch (error) {
@@ -130,7 +130,10 @@ async function searchStock() {
 
   try {
     const response = await fetch(`${API_BASE_URL}/api/stock/${market}/${ticker}`);
-    const data = await response.json();
+    const text = await response.text();
+    // Replace NaN with null to make it valid JSON
+    const safeText = text.replace(/NaN/g, 'null');
+    const data = JSON.parse(safeText);
 
     if (!data.success) {
       statusDiv.innerHTML = `<p style="color: red;">Error: ${data.error || 'Stock not found'}</p>`;
@@ -148,22 +151,27 @@ function displayStockInfo(data) {
   const infoDiv = document.getElementById('stock-info-container');
   const priceData = data.data.price;
   const growthData = data.data.growth_and_valuation;
+  const performanceData = data.data.performance_period ? data.data.performance_period[0] : {};
+  const lastTradingVolume = data.data.last_trading_results ? data.data.last_trading_results[0]["Last Trading Results.1"] : 'N/A';
 
   let priceHtml = '';
   let growthHtml = '';
+  let performanceHtml = '';
 
+  // Price Information
   if (Array.isArray(priceData) && priceData.length > 0) {
     const price = priceData[0];
     priceHtml = `
       <div class="info-card">
         <h4>Price Information</h4>
-        <p><strong>Current Price:</strong> ${price.price || 'N/A'}</p>
+        <p><strong>Current Price:</strong> ${price.Price || price.price || 'N/A'}</p>
         <p><strong>Currency:</strong> ${price.currency || 'N/A'}</p>
-        <p><strong>Date:</strong> ${price.date || 'N/A'}</p>
+        <p><strong>Date:</strong> ${price.Date || price.date || 'N/A'}</p>
       </div>
     `;
   }
 
+  // Growth & Valuation
   if (Array.isArray(growthData) && growthData.length > 0) {
     const growth = growthData[0];
     growthHtml = `
@@ -176,6 +184,29 @@ function displayStockInfo(data) {
     `;
   }
 
+  // Performance Period Boxes
+  if (performanceData && Object.keys(performanceData).length > 0) {
+    performanceHtml = `
+      <div class="performance-container grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-4">
+        ${Object.entries(performanceData).map(([period, value]) => {
+          const isPositive = value.startsWith('+');
+          const bgColor = isPositive ? 'bg-green-100' : 'bg-red-100';
+          const textColor = isPositive ? 'text-green-700' : 'text-red-700';
+          return `
+            <div class="performance-box ${bgColor} ${textColor} p-3 rounded-md text-center">
+              <p class="text-sm font-medium">${period}</p>
+              <p class="text-lg font-semibold">${value}</p>
+            </div>
+          `;
+        }).join('')}
+      </div>
+      <div class="volume-box bg-gray-100 text-gray-800 p-3 rounded-md mb-4">
+        <p class="text-sm font-medium">Last Trading Volume</p>
+        <p class="text-lg font-semibold">${lastTradingVolume}</p>
+      </div>
+    `;
+  }
+
   infoDiv.innerHTML = `
     <div class="stock-info-section">
       <h3>${data.ticker} - ${data.market_name}</h3>
@@ -183,39 +214,45 @@ function displayStockInfo(data) {
         ${priceHtml}
         ${growthHtml}
       </div>
+      ${performanceHtml}
     </div>
   `;
 
-  // Create stock chart
-  createStockChart(data.ticker);
+  // Create stock chart with actual data
+  createStockChart(data);
 }
 
-function createStockChart(ticker) {
+function createStockChart(data) {
+  const ticker = data.ticker;
+  const priceData = data.data.price || [];
   const chartContainer = document.getElementById('stock-chart-container');
   
   if (!chartContainer.querySelector('canvas')) {
     chartContainer.innerHTML = '<canvas id="stock-price-chart"></canvas>';
   }
 
-  // Placeholder chart - you can update this with actual historical data if available
   const ctx = document.getElementById('stock-price-chart').getContext('2d');
 
   if (stockChart) {
     stockChart.destroy();
   }
 
+  // Extract labels and prices (sorted chronologically)
+  const labels = priceData.map(p => new Date(p.Date || p.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }));
+  const prices = priceData.map(p => p.Price || p.price);
+
   stockChart = new Chart(ctx, {
     type: 'line',
     data: {
-      labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
+      labels: labels,
       datasets: [{
         label: `${ticker} Price`,
-        data: [100, 105, 103, 108, 110],
+        data: prices,
         borderColor: colors[0],
         backgroundColor: 'rgba(0, 123, 255, 0.1)',
         fill: true,
         tension: 0.4,
-        pointRadius: 4
+        pointRadius: 0
       }]
     },
     options: {
@@ -223,7 +260,18 @@ function createStockChart(ticker) {
       maintainAspectRatio: false,
       interaction: { mode: 'index', intersect: false },
       scales: {
-        y: { title: { display: true, text: 'Price (KES)' } }
+        x: { 
+          title: { display: true, text: 'Date' },
+          ticks: {
+            callback: function(value, index) {
+              if (index % Math.ceil(labels.length / 12) === 0) {
+                return labels[index];
+              }
+              return '';
+            }
+          }
+        },
+        y: { title: { display: true, text: 'Price' } }
       },
       plugins: {
         tooltip: {
@@ -231,6 +279,15 @@ function createStockChart(ticker) {
             label: function(context) {
               return `${context.dataset.label}: ${context.parsed.y.toFixed(2)}`;
             }
+          }
+        },
+        zoom: {
+          pan: { enabled: true, mode: 'x' },
+          zoom: {
+            wheel: { enabled: true },
+            drag: { enabled: true },
+            pinch: { enabled: true },
+            mode: 'x'
           }
         }
       }
