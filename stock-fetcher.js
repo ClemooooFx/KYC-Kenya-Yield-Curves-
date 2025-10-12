@@ -226,8 +226,8 @@ function createStockChart(data) {
         label: `${ticker} Price`,
         data: prices,
         borderColor: colors[0],
-        backgroundColor: 'rgba(0, 123, 255, 0.1)',
-        fill: true,
+        backgroundColor: colors[0],
+        fill: false,
         tension: 0.4,
         pointRadius: 0
       }]
