@@ -187,22 +187,24 @@ function displayStockInfo(data) {
   // Performance Period Boxes
   if (performanceData && Object.keys(performanceData).length > 0) {
     performanceHtml = `
-      <div class="performance-container grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-4">
-        ${Object.entries(performanceData).map(([period, value]) => {
-          const isPositive = value.startsWith('+');
-          const bgColor = isPositive ? 'bg-green-100' : 'bg-red-100';
-          const textColor = isPositive ? 'text-green-700' : 'text-red-700';
-          return `
-            <div class="performance-box ${bgColor} ${textColor} p-3 rounded-md text-center">
-              <p class="text-sm font-medium">${period}</p>
-              <p class="text-lg font-semibold">${value}</p>
-            </div>
-          `;
-        }).join('')}
+      <div class="performance-periods">
+        <h4>Performance Periods</h4>
+        <div class="period-boxes">
+          ${Object.entries(performanceData).map(([period, value]) => {
+            const isPositive = value.startsWith('+');
+            const boxClass = isPositive ? 'positive' : 'negative';
+            return `
+              <div class="period-box ${boxClass}">
+                <span class="period-label">${period}</span>
+                <span class="period-value">${value}</span>
+              </div>
+            `;
+          }).join('')}
+        </div>
       </div>
-      <div class="volume-box bg-gray-100 text-gray-800 p-3 rounded-md mb-4">
-        <p class="text-sm font-medium">Last Trading Volume</p>
-        <p class="text-lg font-semibold">${lastTradingVolume}</p>
+      <div class="info-card">
+        <h4>Last Trading Volume</h4>
+        <p><strong>Volume:</strong> ${lastTradingVolume}</p>
       </div>
     `;
   }
