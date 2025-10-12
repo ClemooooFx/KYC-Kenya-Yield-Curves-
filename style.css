@@ -588,12 +588,12 @@ button {
 }
 
 .period-box {
-  padding: 15px;
-  border-radius: 8px;
+  padding: 9px;
+  border-radius: 3px;
   text-align: center;
   cursor: pointer;
   transition: all 0.3s ease;
-  border: 2px solid transparent;
+  border: 1px solid transparent;
   background: white;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
