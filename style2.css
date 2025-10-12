@@ -1,0 +1,85 @@
+/* Reset and Base Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: #f7fafc;
+  color: #1a202c;
+}
+
+/* Navbar */
+.nav-link {
+  @apply px-4 py-2 text-gray-700 font-medium hover:bg-gray-100 rounded-md transition-colors;
+}
+
+.dropdown {
+  @apply absolute hidden group-hover:block bg-white shadow-lg rounded-md mt-1 min-w-[200px] z-50;
+}
+
+.dropdown li a {
+  @apply block px-4 py-2 text-sm text-gray-600 hover:bg-gray-100;
+}
+
+/* Tables */
+table {
+  @apply w-full border-collapse;
+}
+
+th, td {
+  @apply px-4 py-2 border-b border-gray-200;
+}
+
+tr:hover {
+  @apply bg-gray-50;
+}
+
+th {
+  @apply font-medium text-gray-600;
+}
+
+/* Charts */
+canvas {
+  @apply rounded-lg bg-white;
+}
+
+/* Sidebar */
+aside {
+  @apply bg-white p-6 rounded-lg shadow-md;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 1024px) {
+  .grid-cols-4 {
+    @apply grid-cols-1;
+  }
+  aside {
+    @apply static;
+  }
+  main {
+    @apply space-y-6;
+  }
+}
+
+@media (max-width: 640px) {
+  .md\:grid-cols-2 {
+    @apply grid-cols-1;
+  }
+  .nav-link {
+    @apply text-sm px-3;
+  }
+  h2 {
+    @apply text-lg;
+  }
+  h3 {
+    @apply text-base;
+  }
+}
+
+/* Pin Button */
+#pin-curve-button svg {
+  @apply transform rotate-45;
+}
