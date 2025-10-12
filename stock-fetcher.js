@@ -15,6 +15,7 @@ const VALID_MARKETS = {
 };
 
 let stockChart = null;
+let currentData = null; // Store API data for chart updates
 
 async function fetchData(endpoint) {
   try {
@@ -140,6 +141,7 @@ async function searchStock() {
       return;
     }
 
+    currentData = data; // Store data for chart updates
     displayStockInfo(data);
     statusDiv.innerHTML = '';
   } catch (error) {
@@ -150,7 +152,7 @@ async function searchStock() {
 function displayStockInfo(data) {
   const infoDiv = document.getElementById('stock-info-container');
   const priceData = data.data.price;
-  const growthData = data.data.growth_and_valuation;
+  const growthData = data.data.growth_and_valuation || [];
   const performanceData = data.data.performance_period ? data.data.performance_period[0] : {};
   const lastTradingVolume = data.data.last_trading_results ? data.data.last_trading_results[0]["Last Trading Results.1"] : 'N/A';
 
@@ -173,28 +175,37 @@ function displayStockInfo(data) {
 
   // Growth & Valuation
   if (Array.isArray(growthData) && growthData.length > 0) {
-    const growth = growthData[0];
     growthHtml = `
       <div class="info-card">
         <h4>Growth & Valuation</h4>
-        ${Object.entries(growth).map(([key, value]) => `
-          <p><strong>${key}:</strong> ${value !== null && value !== undefined ? value : 'N/A'}</p>
+        ${growthData.map(item => `
+          <p><strong>${item["Growth & Valuation"]}:</strong> ${item["Growth & Valuation.1"] || 'N/A'}</p>
         `).join('')}
       </div>
     `;
   }
 
-  // Performance Period Boxes
+  // Performance Period Boxes (ordered: 1WK, 4WK, 3MO, 6MO, YTD, 1YR, All-Time)
+  const periodOrder = ['1WK', '4WK', '3MO', '6MO', 'YTD', '1YR', 'All-Time'];
   if (performanceData && Object.keys(performanceData).length > 0) {
     performanceHtml = `
       <div class="performance-periods">
         <h4>Performance Periods</h4>
         <div class="period-boxes">
-          ${Object.entries(performanceData).map(([period, value]) => {
+          ${periodOrder.map(period => {
+            if (period === 'All-Time') {
+              return `
+                <div class="period-box" data-period="All-Time">
+                  <span class="period-label">All-Time</span>
+                  <span class="period-value">Full History</span>
+                </div>
+              `;
+            }
+            const value = performanceData[period] || 'N/A';
             const isPositive = value.startsWith('+');
-            const boxClass = isPositive ? 'positive' : 'negative';
+            const boxClass = isPositive ? 'positive' : value === 'N/A' ? '' : 'negative';
             return `
-              <div class="period-box ${boxClass}">
+              <div class="period-box ${boxClass}" data-period="${period}">
                 <span class="period-label">${period}</span>
                 <span class="period-value">${value}</span>
               </div>
@@ -220,11 +231,21 @@ function displayStockInfo(data) {
     </div>
   `;
 
-  // Create stock chart with actual data
-  createStockChart(data);
+  // Add event listeners for period boxes
+  document.querySelectorAll('.period-box').forEach(box => {
+    box.addEventListener('click', () => {
+      document.querySelectorAll('.period-box').forEach(b => b.classList.remove('active'));
+      box.classList.add('active');
+      const period = box.getAttribute('data-period');
+      createStockChart(data, period);
+    });
+  });
+
+  // Initialize chart with All-Time view
+  createStockChart(data, 'All-Time');
 }
 
-function createStockChart(data) {
+function createStockChart(data, selectedPeriod = 'All-Time') {
   const ticker = data.ticker;
   const priceData = data.data.price || [];
   const chartContainer = document.getElementById('stock-chart-container');
@@ -239,9 +260,34 @@ function createStockChart(data) {
     stockChart.destroy();
   }
 
-  // Extract labels and prices (sorted chronologically)
-  const labels = priceData.map(p => new Date(p.Date || p.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }));
-  const prices = priceData.map(p => p.Price || p.price);
+  // Sort price data by date
+  const sortedData = [...priceData].sort((a, b) => new Date(a.Date || a.date) - new Date(b.Date || b.date));
+
+  // Filter data by selected period
+  const now = new Date();
+  let filteredData = sortedData;
+  if (selectedPeriod !== 'All-Time') {
+    const periods = {
+      '1WK': 7 * 24 * 60 * 60 * 1000, // 7 days
+      '4WK': 28 * 24 * 60 * 60 * 1000, // 28 days
+      '3MO': 90 * 24 * 60 * 60 * 1000, // 90 days
+      '6MO': 180 * 24 * 60 * 60 * 1000, // 180 days
+      'YTD': (() => {
+        const startOfYear = new Date(now.getFullYear(), 0, 1);
+        return now - startOfYear;
+      })(),
+      '1YR': 365 * 24 * 60 * 60 * 1000 // 365 days
+    };
+    const timeRange = periods[selectedPeriod];
+    filteredData = sortedData.filter(p => {
+      const date = new Date(p.Date || p.date);
+      return (now - date) <= timeRange;
+    });
+  }
+
+  // Extract labels and prices
+  const labels = filteredData.map(p => new Date(p.Date || p.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }));
+  const prices = filteredData.map(p => p.Price || p.price);
 
   stockChart = new Chart(ctx, {
     type: 'line',
