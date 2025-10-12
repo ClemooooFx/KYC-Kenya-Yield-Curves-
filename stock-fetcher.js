@@ -151,7 +151,7 @@ async function searchStock() {
 
 function displayStockInfo(data) {
   const infoDiv = document.getElementById('stock-info-container');
-  const priceData = data.data.price;
+  const priceData = data.data.price || [];
   const growthData = data.data.growth_and_valuation || [];
   const performanceData = data.data.performance_period ? data.data.performance_period[0] : {};
   const lastTradingVolume = data.data.last_trading_results ? data.data.last_trading_results[0]["Last Trading Results.1"] : 'N/A';
@@ -160,15 +160,17 @@ function displayStockInfo(data) {
   let growthHtml = '';
   let performanceHtml = '';
 
-  // Price Information
+  // Price Information (use latest price)
   if (Array.isArray(priceData) && priceData.length > 0) {
-    const price = priceData[0];
+    // Sort by date descending to get latest price
+    const sortedPriceData = [...priceData].sort((a, b) => new Date(b.Date || b.date) - new Date(a.Date || a.date));
+    const latestPrice = sortedPriceData[0];
     priceHtml = `
       <div class="info-card">
         <h4>Price Information</h4>
-        <p><strong>Current Price:</strong> ${price.Price || price.price || 'N/A'}</p>
-        <p><strong>Currency:</strong> ${price.currency || 'N/A'}</p>
-        <p><strong>Date:</strong> ${price.Date || price.date || 'N/A'}</p>
+        <p><strong>Current Price:</strong> ${latestPrice.Price || latestPrice.price || 'N/A'}</p>
+        <p><strong>Currency:</strong> ${latestPrice.currency || 'N/A'}</p>
+        <p><strong>Date:</strong> ${latestPrice.Date || latestPrice.date || 'N/A'}</p>
       </div>
     `;
   }
@@ -185,19 +187,33 @@ function displayStockInfo(data) {
     `;
   }
 
+  // Calculate All-Time percentage return
+  let allTimeReturn = 'N/A';
+  if (priceData.length > 1) {
+    const sortedByDate = [...priceData].sort((a, b) => new Date(a.Date || a.date) - new Date(b.Date || b.date));
+    const earliestPrice = parseFloat(sortedByDate[0].Price || sortedByDate[0].price);
+    const latestPrice = parseFloat(sortedByDate[sortedByDate.length - 1].Price || sortedByDate[sortedByDate.length - 1].price);
+    if (!isNaN(earliestPrice) && !isNaN(latestPrice) && earliestPrice !== 0) {
+      const percentageReturn = ((latestPrice - earliestPrice) / earliestPrice * 100).toFixed(2);
+      allTimeReturn = percentageReturn >= 0 ? `+${percentageReturn}%` : `${percentageReturn}%`;
+    }
+  }
+
   // Performance Period Boxes (ordered: 1WK, 4WK, 3MO, 6MO, YTD, 1YR, All-Time)
   const periodOrder = ['1WK', '4WK', '3MO', '6MO', 'YTD', '1YR', 'All-Time'];
-  if (performanceData && Object.keys(performanceData).length > 0) {
+  if (performanceData && Object.keys(performanceData).length > 0 || allTimeReturn !== 'N/A') {
     performanceHtml = `
       <div class="performance-periods">
         <h4>Performance Periods</h4>
         <div class="period-boxes">
           ${periodOrder.map(period => {
             if (period === 'All-Time') {
+              const isPositive = allTimeReturn.startsWith('+');
+              const boxClass = allTimeReturn === 'N/A' ? '' : isPositive ? 'positive' : 'negative';
               return `
-                <div class="period-box" data-period="All-Time">
+                <div class="period-box ${boxClass}" data-period="All-Time">
                   <span class="period-label">All-Time</span>
-                  <span class="period-value">Full History</span>
+                  <span class="period-value">${allTimeReturn}</span>
                 </div>
               `;
             }
