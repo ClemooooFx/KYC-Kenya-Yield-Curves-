@@ -130,7 +130,10 @@ async function searchStock() {
 
   try {
     const response = await fetch(`${API_BASE_URL}/api/stock/${market}/${ticker}`);
-    const data = await response.json();
+    const text = await response.text();
+    // Replace NaN with null to make it valid JSON
+    const safeText = text.replace(/NaN/g, 'null');
+    const data = JSON.parse(safeText);
 
     if (!data.success) {
       statusDiv.innerHTML = `<p style="color: red;">Error: ${data.error || 'Stock not found'}</p>`;
@@ -144,6 +147,7 @@ async function searchStock() {
   }
 }
 
+
 function displayStockInfo(data) {
   const infoDiv = document.getElementById('stock-info-container');
   const priceData = data.data.price;
@@ -153,19 +157,22 @@ function displayStockInfo(data) {
   let growthHtml = '';
 
   if (Array.isArray(priceData) && priceData.length > 0) {
-    const price = priceData[0];
+    const price = priceData[0];  // Assuming first is latest
     priceHtml = `
       <div class="info-card">
         <h4>Price Information</h4>
-        <p><strong>Current Price:</strong> ${price.price || 'N/A'}</p>
+        <p><strong>Current Price:</strong> ${price.Price || 'N/A'}</p>
         <p><strong>Currency:</strong> ${price.currency || 'N/A'}</p>
-        <p><strong>Date:</strong> ${price.date || 'N/A'}</p>
+        <p><strong>Date:</strong> ${price.Date || 'N/A'}</p>
       </div>
     `;
   }
 
   if (Array.isArray(growthData) && growthData.length > 0) {
-    const growth = growthData[0];
+    const growth = growthData.reduce((acc, item) => {
+      acc[item['Growth & Valuation']] = item['Growth & Valuation.1'];
+      return acc;
+    }, {});
     growthHtml = `
       <div class="info-card">
         <h4>Growth & Valuation</h4>
@@ -186,31 +193,38 @@ function displayStockInfo(data) {
     </div>
   `;
 
-  // Create stock chart
-  createStockChart(data.ticker);
+  // Create stock chart with actual data
+  createStockChart(data);
 }
 
-function createStockChart(ticker) {
+function createStockChart(data) {
+  const ticker = data.ticker;
+  const priceData = data.data.price || [];
   const chartContainer = document.getElementById('stock-chart-container');
   
   if (!chartContainer.querySelector('canvas')) {
     chartContainer.innerHTML = '<canvas id="stock-price-chart"></canvas>';
   }
 
-  // Placeholder chart - you can update this with actual historical data if available
   const ctx = document.getElementById('stock-price-chart').getContext('2d');
 
   if (stockChart) {
     stockChart.destroy();
   }
 
+  // Extract labels and prices (reverse if needed for chronological order)
+  let labels = priceData.map(p => new Date(p.Date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }));
+  let prices = priceData.map(p => p.Price);
+
+  // If data is oldest first, it's already chronological; no need to reverse
+
   stockChart = new Chart(ctx, {
     type: 'line',
     data: {
-      labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
+      labels: labels,
       datasets: [{
         label: `${ticker} Price`,
-        data: [100, 105, 103, 108, 110],
+        data: prices,
         borderColor: colors[0],
         backgroundColor: 'rgba(0, 123, 255, 0.1)',
         fill: true,
@@ -223,7 +237,19 @@ function createStockChart(ticker) {
       maintainAspectRatio: false,
       interaction: { mode: 'index', intersect: false },
       scales: {
-        y: { title: { display: true, text: 'Price (KES)' } }
+        x: { 
+          title: { display: true, text: 'Date' },
+          ticks: {
+            callback: function(value, index) {
+              // Show fewer ticks for readability
+              if (index % Math.ceil(labels.length / 12) === 0) {
+                return labels[index];
+              }
+              return '';
+            }
+          }
+        },
+        y: { title: { display: true, text: 'Price' } }
       },
       plugins: {
         tooltip: {
@@ -231,6 +257,15 @@ function createStockChart(ticker) {
             label: function(context) {
               return `${context.dataset.label}: ${context.parsed.y.toFixed(2)}`;
             }
+          }
+        },
+        zoom: {
+          pan: { enabled: true, mode: 'x' },
+          zoom: {
+            wheel: { enabled: true },
+            drag: { enabled: true },
+            pinch: { enabled: true },
+            mode: 'x'
           }
         }
       }
