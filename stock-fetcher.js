@@ -373,22 +373,33 @@ async function renderDashboard() {
   console.log('Gainers data:', gainers.data);
   console.log('Losers data:', losers.data);
 
+
   message.textContent = '';
 
   if (gainers.success) {
-    populateTable('top-gainers-body', gainers.data, (item) => `
-      <td>${item["Top Gainers (30)"]}</td>
-      <td>${item["Top Gainers (30).1"]}</td>
-      <td>${item["Top Gainers (30).2"]}</td>
-    `);
+    populateTable('top-gainers-body', gainers.data, (item) => {
+      // Get field names dynamically - find keys that start with "Top Gainers"
+      const keys = Object.keys(item).filter(k => k.startsWith('Top Gainers'));
+      const baseKey = keys[0];
+      return `
+        <td>${item[baseKey]}</td>
+        <td>${item[baseKey + '.1']}</td>
+        <td>${item[baseKey + '.2']}</td>
+      `;
+    });
   }
 
   if (losers.success) {
-    populateTable('bottom-losers-body', losers.data, (item) => `
-      <td>${item["Bottom Losers (22)"]}</td>
-      <td>${item["Bottom Losers (22).1"]}</td>
-      <td>${item["Bottom Losers (22).2"]}</td>
-    `);
+    populateTable('bottom-losers-body', losers.data, (item) => {
+      // Get field names dynamically - find keys that start with "Bottom Losers"
+      const keys = Object.keys(item).filter(k => k.startsWith('Bottom Losers'));
+      const baseKey = keys[0];
+      return `
+        <td>${item[baseKey]}</td>
+        <td>${item[baseKey + '.1']}</td>
+        <td>${item[baseKey + '.2']}</td>
+      `;
+    });
   }
 
   if (listed.success) {
