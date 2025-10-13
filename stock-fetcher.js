@@ -377,17 +377,17 @@ async function renderDashboard() {
 
   if (gainers.success) {
     populateTable('top-gainers-body', gainers.data, (item) => `
-      <td>${item["Top Gainers (21)"]}</td>
-      <td>${item["Top Gainers (21).1"]}</td>
-      <td>${item["Top Gainers (21).2"]}</td>
+      <td>${item["Top Gainers (30)"]}</td>
+      <td>${item["Top Gainers (30).1"]}</td>
+      <td>${item["Top Gainers (30).2"]}</td>
     `);
   }
 
   if (losers.success) {
     populateTable('bottom-losers-body', losers.data, (item) => `
-      <td>${item["Bottom Losers (30)"]}</td>
-      <td>${item["Bottom Losers (30).1"]}</td>
-      <td>${item["Bottom Losers (30).2"]}</td>
+      <td>${item["Bottom Losers (22)"]}</td>
+      <td>${item["Bottom Losers (22).1"]}</td>
+      <td>${item["Bottom Losers (22).2"]}</td>
     `);
   }
 
