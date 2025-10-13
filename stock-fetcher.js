@@ -58,7 +58,7 @@ function renderIndexChart(data) {
     borderColor: colors[0],
     backgroundColor: colors[0],
     fill: false,
-    tension: 0.4,
+    tension: 0,
     pointRadius: 0
   }];
 
@@ -315,7 +315,7 @@ function createStockChart(data, selectedPeriod = 'All-Time') {
         borderColor: colors[0],
         backgroundColor: 'rgba(0, 123, 255, 0.1)',
         fill: true,
-        tension: 0.4,
+        tension: 0,
         pointRadius: 0
       }]
     },
