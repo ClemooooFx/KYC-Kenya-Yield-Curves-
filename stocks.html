@@ -39,7 +39,39 @@
     </ul>
 </nav>
 
-<div class="search-section">
+
+    
+ <h2>Nairobi Securities Exchange (NSE) Dashboard</h2>
+
+<div class="section">
+  <h3>Top Gainers</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Ticker</th>
+        <th>Price (KES)</th>
+        <th>Change (%)</th>
+      </tr>
+    </thead>
+    <tbody id="top-gainers-body"></tbody>
+  </table>
+</div>
+
+<div class="section">
+  <h3>Bottom Losers</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Ticker</th>
+        <th>Price (KES)</th>
+        <th>Change (%)</th>
+      </tr>
+    </thead>
+    <tbody id="bottom-losers-body"></tbody>
+  </table>
+</div>
+
+    <div class="search-section">
   <h2>Search Stock by Ticker</h2>
   <div class="search-controls">
     <input 
@@ -71,36 +103,6 @@
 <div id="stock-chart-container" class="chart-container">
   <h3 id="chart-title">Price Chart</h3>
   <canvas id="stock-price-chart" style="max-height: 400px;"></canvas>
-</div>
-    
- <h2>Nairobi Securities Exchange (NSE) Dashboard</h2>
-
-<div class="section">
-  <h3>Top Gainers</h3>
-  <table>
-    <thead>
-      <tr>
-        <th>Ticker</th>
-        <th>Price (KES)</th>
-        <th>Change (%)</th>
-      </tr>
-    </thead>
-    <tbody id="top-gainers-body"></tbody>
-  </table>
-</div>
-
-<div class="section">
-  <h3>Bottom Losers</h3>
-  <table>
-    <thead>
-      <tr>
-        <th>Ticker</th>
-        <th>Price (KES)</th>
-        <th>Change (%)</th>
-      </tr>
-    </thead>
-    <tbody id="bottom-losers-body"></tbody>
-  </table>
 </div>
 
 <div class="section">
