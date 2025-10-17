@@ -1,29 +1,20 @@
-const API_BASE_URL = 'https://web-production-7130.up.railway.app';
+// Configuration - only store what's necessary for UI
 const colors = ['#007bff', '#28a745', '#ffc107', '#dc3545', '#17a2b8'];
 
-const VALID_MARKETS = {
-  'bse': 'Botswana Stock Exchange',
-  'brvm': 'Bourse Régionale des Valeurs Mobilières',
-  'gse': 'Ghana Stock Exchange',
-  'jse': 'Johannesburg Stock Exchange',
-  'luse': 'Lusaka Securities Exchange',
-  'mse': 'Malawi Stock Exchange',
-  'nse': 'Nairobi Securities Exchange',
-  'ngx': 'Nigerian Stock Exchange',
-  'use': 'Uganda Securities Exchange',
-  'zse': 'Zimbabwe Stock Exchange'
-};
-
 let stockChart = null;
-let currentData = null; // Store API data for chart updates
+let currentTicker = null;
+let currentMarket = null;
+
+// Get API base URL from environment or data attribute
+const API_BASE_URL = document.querySelector('[data-api-url]')?.getAttribute('data-api-url') || 
+                     window.ENV?.API_URL || 
+                     'https://web-production-7130.up.railway.app';
 
 async function fetchData(endpoint) {
   try {
     const response = await fetch(`${API_BASE_URL}${endpoint}`);
-    const text = await response.text();
-    // Replace all NaN with null for valid JSON
-    const safeText = text.replace(/NaN/g, 'null');
-    return JSON.parse(safeText);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    return await response.json();
   } catch (error) {
     console.error(`Error fetching ${endpoint}:`, error);
     return { success: false, data: [] };
@@ -52,19 +43,20 @@ function renderIndexChart(data) {
   const labels = data.map(d => d.Date || d.date);
   const prices = data.map(d => d.Price || d.price);
 
-  const datasets = [{
-    label: 'NSE All Share Index',
-    data: prices,
-    borderColor: colors[0],
-    backgroundColor: colors[0],
-    fill: false,
-    tension: 0,
-    pointRadius: 0
-  }];
-
   new Chart(ctx, {
     type: 'line',
-    data: { labels, datasets },
+    data: { 
+      labels, 
+      datasets: [{
+        label: 'NSE All Share Index',
+        data: prices,
+        borderColor: colors[0],
+        backgroundColor: colors[0],
+        fill: false,
+        tension: 0,
+        pointRadius: 0
+      }]
+    },
     options: {
       responsive: true,
       maintainAspectRatio: false,
@@ -86,18 +78,6 @@ function renderIndexChart(data) {
         y: { title: { display: true, text: 'Index Price (KES)' } }
       },
       plugins: {
-        tooltip: {
-          callbacks: {
-            label: function(context) {
-              let label = context.dataset.label || '';
-              if (label) label += ': ';
-              if (context.parsed.y !== null) {
-                label += `${context.parsed.y.toFixed(2)}`;
-              }
-              return label;
-            }
-          }
-        },
         zoom: {
           pan: { enabled: true, mode: 'x' },
           zoom: {
@@ -130,18 +110,15 @@ async function searchStock() {
   statusDiv.innerHTML = '<p style="color: blue;">Loading stock data...</p>';
 
   try {
-    const response = await fetch(`${API_BASE_URL}/api/stock/${market}/${ticker}`);
-    const text = await response.text();
-    // Replace NaN with null to make it valid JSON
-    const safeText = text.replace(/NaN/g, 'null');
-    const data = JSON.parse(safeText);
+    const data = await fetchData(`/api/stock/${market}/${ticker}`);
 
     if (!data.success) {
       statusDiv.innerHTML = `<p style="color: red;">Error: ${data.error || 'Stock not found'}</p>`;
       return;
     }
 
-    currentData = data; // Store data for chart updates
+    currentTicker = ticker;
+    currentMarket = market;
     displayStockInfo(data);
     statusDiv.innerHTML = '';
   } catch (error) {
@@ -151,90 +128,55 @@ async function searchStock() {
 
 function displayStockInfo(data) {
   const infoDiv = document.getElementById('stock-info-container');
-  const priceData = data.data.price || [];
+  const latestPrice = data.data.latest_price || {};
   const growthData = data.data.growth_and_valuation || [];
-  const performanceData = data.data.performance_period ? data.data.performance_period[0] : {};
-  const lastTradingVolume = data.data.last_trading_results ? data.data.last_trading_results[0]["Last Trading Results.1"] : 'N/A';
+  const calculatedPerformance = data.data.calculated_performance || {};
+  const lastTradingVolume = data.data.last_trading_volume || 'N/A';
 
-  let priceHtml = '';
-  let growthHtml = '';
-  let performanceHtml = '';
-
-  // Price Information (use latest price)
-  if (Array.isArray(priceData) && priceData.length > 0) {
-    // Sort by date descending to get latest price
-    const sortedPriceData = [...priceData].sort((a, b) => new Date(b.Date || b.date) - new Date(a.Date || a.date));
-    const latestPrice = sortedPriceData[0];
-    priceHtml = `
-      <div class="info-card">
-        <h4>Price Information</h4>
-        <p><strong>Current Price:</strong> ${latestPrice.Price || latestPrice.price || 'N/A'}</p>
-        <p><strong>Currency:</strong> ${latestPrice.currency || 'N/A'}</p>
-        <p><strong>Date:</strong> ${latestPrice.Date || latestPrice.date || 'N/A'}</p>
-      </div>
-    `;
-  }
+  // Price Information
+  const priceHtml = latestPrice ? `
+    <div class="info-card">
+      <h4>Price Information</h4>
+      <p><strong>Current Price:</strong> ${latestPrice.Price || latestPrice.price || 'N/A'}</p>
+      <p><strong>Currency:</strong> ${latestPrice.currency || 'N/A'}</p>
+      <p><strong>Date:</strong> ${latestPrice.Date || latestPrice.date || 'N/A'}</p>
+    </div>
+  ` : '';
 
   // Growth & Valuation
-  if (Array.isArray(growthData) && growthData.length > 0) {
-    growthHtml = `
-      <div class="info-card">
-        <h4>Growth & Valuation</h4>
-        ${growthData.map(item => `
-          <p><strong>${item["Growth & Valuation"]}:</strong> ${item["Growth & Valuation.1"] || 'N/A'}</p>
-        `).join('')}
-      </div>
-    `;
-  }
+  const growthHtml = growthData.length > 0 ? `
+    <div class="info-card">
+      <h4>Growth & Valuation</h4>
+      ${growthData.map(item => `
+        <p><strong>${item["Growth & Valuation"]}:</strong> ${item["Growth & Valuation.1"] || 'N/A'}</p>
+      `).join('')}
+    </div>
+  ` : '';
 
-  // Calculate All-Time percentage return
-  let allTimeReturn = 'N/A';
-  if (priceData.length > 1) {
-    const sortedByDate = [...priceData].sort((a, b) => new Date(a.Date || a.date) - new Date(b.Date || b.date));
-    const earliestPrice = parseFloat(sortedByDate[0].Price || sortedByDate[0].price);
-    const latestPrice = parseFloat(sortedByDate[sortedByDate.length - 1].Price || sortedByDate[sortedByDate.length - 1].price);
-    if (!isNaN(earliestPrice) && !isNaN(latestPrice) && earliestPrice !== 0) {
-      const percentageReturn = ((latestPrice - earliestPrice) / earliestPrice * 100).toFixed(2);
-      allTimeReturn = percentageReturn >= 0 ? `+${percentageReturn}%` : `${percentageReturn}%`;
-    }
-  }
-
-  // Performance Period Boxes (ordered: 1WK, 4WK, 3MO, 6MO, YTD, 1YR, All-Time)
+  // Performance Period Boxes
   const periodOrder = ['1WK', '4WK', '3MO', '6MO', 'YTD', '1YR', 'All-Time'];
-  if (performanceData && Object.keys(performanceData).length > 0 || allTimeReturn !== 'N/A') {
-    performanceHtml = `
-      <div class="performance-periods">
-        <h4>Performance Periods</h4>
-        <div class="period-boxes">
-          ${periodOrder.map(period => {
-            if (period === 'All-Time') {
-              const isPositive = allTimeReturn.startsWith('+');
-              const boxClass = allTimeReturn === 'N/A' ? '' : isPositive ? 'positive' : 'negative';
-              return `
-                <div class="period-box ${boxClass}" data-period="All-Time">
-                  <span class="period-label">All-Time</span>
-                  <span class="period-value">${allTimeReturn}</span>
-                </div>
-              `;
-            }
-            const value = performanceData[period] || 'N/A';
-            const isPositive = value.startsWith('+');
-            const boxClass = isPositive ? 'positive' : value === 'N/A' ? '' : 'negative';
-            return `
-              <div class="period-box ${boxClass}" data-period="${period}">
-                <span class="period-label">${period}</span>
-                <span class="period-value">${value}</span>
-              </div>
-            `;
-          }).join('')}
-        </div>
+  const performanceHtml = `
+    <div class="performance-periods">
+      <h4>Performance Periods</h4>
+      <div class="period-boxes">
+        ${periodOrder.map(period => {
+          const value = calculatedPerformance[period] || 'N/A';
+          const isPositive = value.startsWith('+');
+          const boxClass = isPositive ? 'positive' : value === 'N/A' ? '' : 'negative';
+          return `
+            <div class="period-box ${boxClass}" data-period="${period}">
+              <span class="period-label">${period}</span>
+              <span class="period-value">${value}</span>
+            </div>
+          `;
+        }).join('')}
       </div>
-      <div class="info-card">
-        <h4>Last Trading Volume</h4>
-        <p><strong>Volume:</strong> ${lastTradingVolume}</p>
-      </div>
-    `;
-  }
+    </div>
+    <div class="info-card">
+      <h4>Last Trading Volume</h4>
+      <p><strong>Volume:</strong> ${lastTradingVolume}</p>
+    </div>
+  `;
 
   infoDiv.innerHTML = `
     <div class="stock-info-section">
@@ -253,57 +195,49 @@ function displayStockInfo(data) {
       document.querySelectorAll('.period-box').forEach(b => b.classList.remove('active'));
       box.classList.add('active');
       const period = box.getAttribute('data-period');
-      createStockChart(data, period);
+      loadStockChart(period);
     });
   });
 
   // Initialize chart with All-Time view
-  createStockChart(data, 'All-Time');
+  loadStockChart('All-Time');
 }
 
-function createStockChart(data, selectedPeriod = 'All-Time') {
-  const ticker = data.ticker;
-  const priceData = data.data.price || [];
+async function loadStockChart(period = 'All-Time') {
   const chartContainer = document.getElementById('stock-chart-container');
   
   if (!chartContainer.querySelector('canvas')) {
     chartContainer.innerHTML = '<canvas id="stock-price-chart"></canvas>';
   }
 
+  try {
+    // Fetch filtered data from backend
+    const data = await fetchData(`/api/stock/${currentMarket}/${currentTicker}/chart?period=${period}`);
+    
+    if (!data.success) {
+      console.error('Error loading chart:', data.error);
+      return;
+    }
+
+    createStockChart(data.data, currentTicker, period);
+  } catch (error) {
+    console.error('Error loading chart:', error);
+  }
+}
+
+function createStockChart(priceData, ticker, period) {
   const ctx = document.getElementById('stock-price-chart').getContext('2d');
 
   if (stockChart) {
     stockChart.destroy();
   }
 
-  // Sort price data by date
-  const sortedData = [...priceData].sort((a, b) => new Date(a.Date || a.date) - new Date(b.Date || b.date));
-
-  // Filter data by selected period
-  const now = new Date();
-  let filteredData = sortedData;
-  if (selectedPeriod !== 'All-Time') {
-    const periods = {
-      '1WK': 7 * 24 * 60 * 60 * 1000, // 7 days
-      '4WK': 28 * 24 * 60 * 60 * 1000, // 28 days
-      '3MO': 90 * 24 * 60 * 60 * 1000, // 90 days
-      '6MO': 180 * 24 * 60 * 60 * 1000, // 180 days
-      'YTD': (() => {
-        const startOfYear = new Date(now.getFullYear(), 0, 1);
-        return now - startOfYear;
-      })(),
-      '1YR': 365 * 24 * 60 * 60 * 1000 // 365 days
-    };
-    const timeRange = periods[selectedPeriod];
-    filteredData = sortedData.filter(p => {
-      const date = new Date(p.Date || p.date);
-      return (now - date) <= timeRange;
-    });
-  }
-
-  // Extract labels and prices
-  const labels = filteredData.map(p => new Date(p.Date || p.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }));
-  const prices = filteredData.map(p => p.Price || p.price);
+  // Data is already sorted and filtered by backend
+  const labels = priceData.map(p => {
+    const date = new Date(p.Date || p.date);
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  });
+  const prices = priceData.map(p => p.Price || p.price);
 
   stockChart = new Chart(ctx, {
     type: 'line',
@@ -370,15 +304,10 @@ async function renderDashboard() {
     fetchData('/api/nse/index_price')
   ]);
 
-  console.log('Gainers data:', gainers.data);
-  console.log('Losers data:', losers.data);
-
-
   message.textContent = '';
 
   if (gainers.success) {
     populateTable('top-gainers-body', gainers.data, (item) => {
-      // Get field names dynamically - find keys that start with "Top Gainers"
       const keys = Object.keys(item).filter(k => k.startsWith('Top Gainers'));
       const baseKey = keys[0];
       return `
@@ -391,7 +320,6 @@ async function renderDashboard() {
 
   if (losers.success) {
     populateTable('bottom-losers-body', losers.data, (item) => {
-      // Get field names dynamically - find keys that start with "Bottom Losers"
       const keys = Object.keys(item).filter(k => k.startsWith('Bottom Losers'));
       const baseKey = keys[0];
       return `
