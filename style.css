@@ -659,7 +659,7 @@ button {
 }
 
 .hero {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    linear-gradient(135deg, #930000 0%, #066720 100%);
     color: white;
     padding: 6rem 2rem;
     text-align: center;
