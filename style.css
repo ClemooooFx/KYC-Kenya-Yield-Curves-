@@ -1054,3 +1054,43 @@ button {
         grid-template-columns: 1fr;
     }
 }
+
+/* ===================================
+   COMING SOON CARD STYLES
+   =================================== */
+.coming-soon-card {
+    position: relative;
+    cursor: default;
+    opacity: 0.95;
+}
+
+.coming-soon-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 80px;
+    height: auto;
+    z-index: 10;
+}
+
+.coming-soon-card:hover {
+    transform: translateY(-5px);
+}
+
+/* ===================================
+   FOOTER DISCLAIMER
+   =================================== */
+.disclaimer {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.disclaimer p {
+    font-size: 0.85rem;
+    line-height: 1.6;
+    opacity: 0.9;
+    max-width: 900px;
+    margin: 0 auto;
+    text-align: center;
+}
