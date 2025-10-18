@@ -1062,20 +1062,29 @@ button {
     position: relative;
     cursor: default;
     opacity: 0.95;
+    overflow: visible;
 }
 
 .coming-soon-badge {
     position: absolute;
-    top: 10px;
-    right: 10px;
-    width: 80px;
+    top: -15px;
+    right: -15px;
+    width: 90px;
     height: auto;
     z-index: 10;
+    transform: rotate(5deg);
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
 }
 
 .coming-soon-card:hover {
     transform: translateY(-5px);
 }
+
+.coming-soon-card:hover .coming-soon-badge {
+    transform: rotate(8deg) scale(1.05);
+    transition: transform 0.3s ease;
+}
+
 
 /* ===================================
    FOOTER DISCLAIMER
