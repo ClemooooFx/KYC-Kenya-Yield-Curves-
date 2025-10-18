@@ -2,7 +2,7 @@
    BASE STYLES
    =================================== */
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  font-family: Arial, sans-serif;
   margin: 0px;
   padding: 0px;
   background: #fafafa;
@@ -588,11 +588,11 @@ button {
 }
 
 /* ===================================
-   HOME PAGE LANDING STYLES (REBRANDED)
+   HOME PAGE LANDING STYLES
    =================================== */
 .home-navbar {
-    background: #000; /* black */
-    box-shadow: 0 2px 10px rgba(0,0,0,0.6);
+    background: #fff;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     position: sticky;
     top: 0;
     z-index: 1000;
@@ -611,25 +611,33 @@ button {
 .home-logo {
     display: flex;
     align-items: center;
-    gap: 0.8rem;
+    gap: 0.5rem;
+    text-decoration: none;
 }
 
 .logo-img {
-    height: 45px;
+    height: 50px;
     width: auto;
+    transition: transform 0.3s ease;
+}
+
+.logo-img:hover {
+    transform: scale(1.05);
 }
 
 .home-logo a {
     font-size: 1.8rem;
-    font-weight: 900;
-    color: #00b050; /* vibrant green for 'bull' theme */
+    font-weight: 700;
+    background: linear-gradient(135deg, #22c55e 0%, #dc2626 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
     text-decoration: none;
-    letter-spacing: 1px;
-    transition: color 0.3s ease;
+    transition: opacity 0.3s ease;
 }
 
-.home-logo a:hover {
-    color: #ff1a1a; /* red accent on hover */
+.home-logo:hover a {
+    opacity: 0.8;
 }
 
 .home-nav-links {
@@ -641,18 +649,17 @@ button {
 
 .home-nav-links a {
     text-decoration: none;
-    color: #fff;
-    font-weight: 700;
+    color: #333;
+    font-weight: 500;
     transition: color 0.3s;
 }
 
 .home-nav-links a:hover {
-    color: #00b050;
+    color: #5500eb;
 }
 
-/* HERO SECTION */
 .hero {
-    background: linear-gradient(135deg, #000 0%, #111 100%);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
     padding: 6rem 2rem;
     text-align: center;
@@ -660,112 +667,191 @@ button {
     overflow: hidden;
 }
 
+.hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="%23ffffff" fill-opacity="0.1" d="M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,122.7C672,117,768,139,864,138.7C960,139,1056,117,1152,106.7C1248,96,1344,96,1392,96L1440,96L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>') no-repeat bottom;
+    background-size: cover;
+}
+
+.hero-content {
+    max-width: 800px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+}
+
 .hero h1 {
     font-size: 3.5rem;
     margin-bottom: 1rem;
-    font-weight: 800;
-    color: #00b050;
-    text-shadow: 0 0 15px rgba(0,176,80,0.3);
+    font-weight: 700;
 }
 
 .hero p {
     font-size: 1.3rem;
     margin-bottom: 2rem;
-    opacity: 0.9;
+    opacity: 0.95;
 }
 
-/* CTA BUTTON */
 .cta-button {
     display: inline-block;
-    background: #00b050;
-    color: #fff;
+    background: white;
+    color: #5500eb;
     padding: 1rem 2.5rem;
     border-radius: 50px;
     text-decoration: none;
     font-weight: 600;
     font-size: 1.1rem;
-    transition: transform 0.3s, box-shadow 0.3s, background 0.3s;
-    box-shadow: 0 4px 15px rgba(0,176,80,0.3);
+    transition: transform 0.3s, box-shadow 0.3s;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
 }
 
 .cta-button:hover {
     transform: translateY(-3px);
-    background: #ff1a1a;
-    box-shadow: 0 6px 20px rgba(255,26,26,0.3);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.3);
 }
 
-/* SECTION TITLES */
+.features {
+    padding: 5rem 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
 .section-title {
     text-align: center;
     font-size: 2.5rem;
     margin-bottom: 3rem;
-    color: #00b050;
+    color: #333;
 }
 
-/* FEATURE CARDS */
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+}
+
 .feature-card {
-    background: #111;
+    background: white;
     padding: 2rem;
     border-radius: 15px;
-    color: #eee;
-    border: 1px solid rgba(0,176,80,0.2);
-    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    transition: transform 0.3s, box-shadow 0.3s;
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
+    display: block;
 }
 
 .feature-card:hover {
     transform: translateY(-10px);
-    box-shadow: 0 8px 30px rgba(255,26,26,0.2);
-    border-color: #ff1a1a;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.15);
 }
 
 .feature-icon {
     width: 60px;
     height: 60px;
-    background: linear-gradient(135deg, #00b050 0%, #ff1a1a 100%);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
     margin-bottom: 1.5rem;
     font-size: 2rem;
-    color: white;
 }
 
-/* MARKETS SECTION */
+.feature-card h3 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    color: #333;
+}
+
+.feature-card p {
+    color: #666;
+    line-height: 1.8;
+}
+
 .markets {
-    background: #000;
+    background: #f8f9fa;
     padding: 5rem 2rem;
 }
 
+.markets-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.markets-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-top: 3rem;
+}
+
 .market-card {
-    background: #111;
+    background: white;
     padding: 1.5rem;
     border-radius: 10px;
     text-align: center;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-    color: #fff;
-}
-
-.market-card h4 {
-    color: #00b050;
-    margin-bottom: 0.5rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    transition: all 0.3s;
 }
 
 .market-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 4px 20px rgba(255,26,26,0.3);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
 }
 
-/* FOOTER */
+.market-card h4 {
+    color: #5500eb;
+    margin-bottom: 0.5rem;
+}
+
+.market-card p {
+    color: #666;
+    font-size: 0.9rem;
+}
+
 .footer {
-    background: #000;
-    color: #fff;
+    background: #2d3748;
+    color: white;
     padding: 3rem 2rem;
     text-align: center;
 }
 
+.footer-content {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.footer-links {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+}
+
+.footer-links a {
+    color: white;
+    text-decoration: none;
+    transition: color 0.3s;
+}
+
 .footer-links a:hover {
-    color: #00b050;
+    color: #667eea;
+}
+
+.mobile-menu-btn {
+    display: none;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #333;
 }
 
 /* ===================================
@@ -847,4 +933,36 @@ button {
         font-size: 14px;
     }
 
-    
+    /* Home page mobile */
+    .mobile-menu-btn {
+        display: block;
+    }
+
+    .home-nav-links {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: white;
+        flex-direction: column;
+        padding: 1rem;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    .home-nav-links.active {
+        display: flex;
+    }
+
+    .hero h1 {
+        font-size: 2.5rem;
+    }
+
+    .hero p {
+        font-size: 1.1rem;
+    }
+
+    .features-grid {
+        grid-template-columns: 1fr;
+    }
+}
