@@ -754,13 +754,29 @@ button {
 .feature-icon {
     width: 60px;
     height: 60px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: transparent;
     border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
     margin-bottom: 1.5rem;
     font-size: 2rem;
+    transition: all 0.3s ease;
+}
+
+.feature-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    transition: transform 0.3s ease;
+}
+
+.feature-card:hover .feature-icon {
+    transform: rotate(5deg) scale(1.1);
+}
+
+.feature-card:hover .feature-icon img {
+    filter: drop-shadow(0 4px 8px rgba(220, 38, 38, 0.3));
 }
 
 .feature-card h3 {
